@@ -1,7 +1,10 @@
 #include "chip8.h"
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string.h>
+
+#define OP_DEBUG 1
 
 /*
  * Initialize registers, and memory once zeroed
@@ -19,18 +22,44 @@ void chip8::init() {
   }
 }
 
-void chip8::load() {}
+void chip8::load() {
+  char *block;
+
+  if (std::ifstream file{"PONG", std::ios::binary | std::ios::ate}) {
+    std::streampos size = file.tellg();
+    block = new char[size];
+
+    std::string str(size, '\0');
+    file.seekg(0);
+    if(file.read(&block[0], size)) {
+      for (int i = 0; i < size; i++) {
+        std::cout << std::hex << std::showbase << (int)block[i] << " ";
+      }
+    } else {
+      std::cout << "broke" << "\n";
+    }
+    std::cout << std::endl;
+
+    delete[] block;
+  } else {
+    std::cerr << "Failed to open file PONG" << std::endl;
+  }
+}
 
 /*
  * Fetch, decode, execute opcodes, and update timers
  */
 void chip8::emuCycle() {
-  // opcode = memory[PC] << 8 | memory[PC + 1];
+#if OP_DEBUG != 1
+  opcode = memory[PC] << 8 | memory[PC + 1];
+#endif
 
+#if OP_DEBUG == 1
   for (const auto i : Opcodes::All) {
     opcode = i;
 
     std::cout << "Trying opcode: " << std::hex << opcode << " ";
+#endif
 
     switch (opcode & 0xF000) {
     case 0x0000:
@@ -171,7 +200,9 @@ void chip8::emuCycle() {
     default:
       std::cerr << "Unknown opcode in default: " << std::hex << opcode << "\n";
     }
+#if OP_DEBUG == 1
   }
+#endif
 
   std::exit(0);
 }
