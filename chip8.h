@@ -1,3 +1,5 @@
+#include <map>
+
 static const unsigned char fontset[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
     0x20, 0x60, 0x20, 0x20, 0x70, // 1
@@ -23,7 +25,7 @@ enum Chip8 {
   // OP_00BN = 0x00B0,
   // OP_00CN = 0x00C0,
   OP_00E0 = 0x00E0,
-  OP_00EE = 0x000E,
+  OP_00EE = 0x00EE,
   OP_00FA = 0x000A,
   // OP_00FB = 0x0000,
   // OP_00FC = 0x0000,
@@ -71,7 +73,7 @@ enum Chip8 {
   // OP_EXF5 = 0xE0F5,
   OP_FX07 = 0xF007,
   OP_FX0A = 0xF00A,
-  OP_FX15 = 0xF005,
+  OP_FX15 = 0xF015,
   OP_FX18 = 0xF008,
   OP_FX1E = 0xF00E,
   OP_FX29 = 0xF009,
@@ -101,6 +103,7 @@ public:
   void setKeys();
 
   bool drawFlag;
+  static std::map<unsigned char, unsigned char> HexToFontCharLoc;
 
 private:
   unsigned int opcode;
