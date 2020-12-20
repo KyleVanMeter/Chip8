@@ -263,11 +263,34 @@ void chip8::emuCycle() {
     case 0xE000:
       switch (opcode & 0xF00F) {
       case Opcodes::Chip8::OP_EX9E:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        // Skip next instruction if V[X] is pressed
+        std::cout << PC << " Skip next instruction if V["
+                  << ((opcode & 0x0F00) >> 8) << "] is pressed.";
+
+        if (key[V[(opcode & 0x0F00) >> 8]] != 0) {
+          std::cout << "  Skipped!";
+          PC += 4;
+        } else {
+          std::cout << "  Not skipped!";
+          PC += 2;
+        }
+        std::cout << std::endl;
+
         break;
       case Opcodes::Chip8::OP_EXA1:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
-        PC += 2;
+        // Skip next instruction if V[X] is pressed
+        std::cout << PC << " Skip next instruction if V["
+                  << ((opcode & 0x0F00) >> 8) << "] is not pressed.";
+
+        if (key[V[(opcode & 0x0F00) >> 8]] != 0) {
+          std::cout << "  Not skipped!";
+          PC += 2;
+        } else {
+          std::cout << "  Skipped!";
+          PC += 4;
+        }
+        std::cout << std::endl;
+
         break;
       default:
         std::cerr << "Unknown opcode in E: " << std::hex << opcode << "\n";
