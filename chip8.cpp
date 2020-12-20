@@ -164,7 +164,6 @@ void chip8::emuCycle() {
         std::cout << "Hit opcode " << std::hex << opcode << "\n";
         break;
       case Opcodes::Chip8::OP_8XY2:
-        // std::cout << "Hit opcode " << std::hex << opcode << "\n";
         std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to "
                   << " V[" << ((opcode & 0x0F00) >> 8) << "] & V["
                   << ((opcode & 0x00F0) >> 4) << "]\n";
@@ -227,10 +226,38 @@ void chip8::emuCycle() {
       std::cout << "Hit opcode " << std::hex << opcode << "\n";
       PC += 2;
       break;
-    case Opcodes::Chip8::OP_DXYN:
-      std::cout << "Hit opcode " << std::hex << opcode << "\n";
+    case Opcodes::Chip8::OP_DXYN: {
+      // Display n-byte sprite starting at I @ (V[X], V[Y]), & V[F] = 1
+      unsigned short x = V[(opcode & 0x0F00) >> 8];
+      unsigned short y = V[(opcode & 0x00F0) >> 4];
+      unsigned short n = opcode & 0x000F;
+      unsigned short pixel;
+
+      std::cout << "Display " << n << "-byte sprite starting at " << I << " @ (V[" << x << "], V[" << y << "])\n";
+
+      // Collision by default is 0
+      V[0xF] = 0;
+
+      for (int yline = 0; yline < n; yline++) {
+        pixel = memory[I + yline];
+        for (int xline = 0; xline < 8; xline++) {
+          // if current evaluated pixel is set to 1
+          if ((pixel & (0x80 >> xline)) != 0) {
+            // if current displayed pixel is set to 1 set V[0xF] = 1
+            if (gfx[(x + xline + ((y + yline) * 64))] == 1) {
+              V[0xF] = 1;
+            }
+
+            // XOR eval pixel with display pixel
+            gfx[(x + xline + ((y + yline) * 64))] ^= 1;
+          }
+        }
+      }
+
+      drawFlag = true;
       PC += 2;
       break;
+    }
     case 0xE000:
       switch (opcode & 0xF00F) {
       case Opcodes::Chip8::OP_EX9E:
@@ -248,7 +275,6 @@ void chip8::emuCycle() {
     case 0xF000:
       switch (opcode & 0xF00F) {
       case Opcodes::Chip8::OP_FX07:
-        // std::cout << "Hit opcode " << std::hex << opcode << "\n";
         std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8)
                   << "] to delay_timer (" << delay_timer << ")\n";
 
