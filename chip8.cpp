@@ -233,7 +233,9 @@ void chip8::emuCycle() {
       unsigned short n = opcode & 0x000F;
       unsigned short pixel;
 
-      std::cout << "Display " << n << "-byte sprite starting at " << I << " @ (V[" << x << "], V[" << y << "])\n";
+      std::cout << PC << " Display " << n << "-byte sprite starting at " << I
+                << " @ (V[" << ((opcode & 0x0F00) >> 8) << "], V["
+                << ((opcode & 0x00F0) >> 4) << "])\n";
 
       // Collision by default is 0
       V[0xF] = 0;
