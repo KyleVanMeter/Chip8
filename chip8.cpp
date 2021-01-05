@@ -1,10 +1,17 @@
 #include "chip8.h"
+#include <SDL2/SDL.h>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string.h>
 
 #define OP_DEBUG 0
+
+static std::map<unsigned char, unsigned char> KeySymToIndex{
+
+    {49, 0},   {50, 1},   {51, 2},  {52, 3},  {113, 4},  {119, 5},
+    {101, 6},  {114, 7},  {97, 8},  {115, 9}, {100, 10}, {102, 11},
+    {122, 12}, {120, 13}, {99, 14}, {118, 15}};
 
 std::map<unsigned char, unsigned char> chip8::HexToFontCharLoc{
     {0x1, 0},  {0x2, 5},  {0x3, 10}, {0x4, 15}, {0x5, 20},
@@ -388,4 +395,23 @@ void chip8::emuCycle() {
   }
 }
 
-void chip8::setKeys() {}
+/*
+ * Modifies the keys[] array to update keyboard input
+ */
+void chip8::setKeys() {
+  SDL_Event e;
+
+  while (SDL_PollEvent(&e)) {
+    std::cerr << "anything?\n";
+    if (e.type == SDL_QUIT) {
+      std::exit(0);
+    }
+    if (e.type == SDL_KEYDOWN) {
+      std::cerr << "We got keydown\n";
+
+      if (KeySymToIndex.find(e.key.keysym.sym) != KeySymToIndex.end()) {
+        std::cerr << "We got a key!\n";
+      }
+    }
+  }
+}

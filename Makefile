@@ -13,7 +13,7 @@ LDFLAGS = $(SDL_LIB)
 	$(CXX) $(HEADER) $(CXXFLAGS) -c -o $@ $<
 
 Chip8: $(OBJ)
-	$(CXX) $(HEADER) -o $@ $^ $(CXXFLAGS)
+	$(CXX) $(HEADER) -o $@ $^ $(LDFLAGS) $(CXXFLAGS)
 
 .PHONY: Chip8
 
