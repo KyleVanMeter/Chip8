@@ -196,7 +196,19 @@ void chip8::emuCycle() {
         break;
       }
       case Opcodes::Chip8::OP_8XY5:
-        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+        std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
+                  << ((opcode & 0x0F00) >> 8) << "] - V["
+                  << ((opcode & 0x00F0) >> 4) << "].  ";
+
+        if (V[(opcode & 0x0F00) >> 8] > V[(opcode & 0x00F0) >> 4]) {
+          std::cout << "V[f] = 1\n";
+          V[0xF] = 1;
+        } else {
+          std::cout << "V[f] = 0\n";
+          V[0xF] = 0;
+        }
+
+        V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];
         PC += 2;
         break;
       case Opcodes::Chip8::OP_8XY6:
