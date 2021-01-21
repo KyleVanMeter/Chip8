@@ -81,17 +81,17 @@ void chip8::emuCycle() {
     case 0x0000:
       switch (opcode & 0x00FF) {
       case Opcodes::Chip8::OP_0NNN:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         PC += 2;
 
         std::exit(0);
 
         break;
       case Opcodes::Chip8::OP_001N:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         break;
       case Opcodes::Chip8::OP_00E0:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         break;
       case Opcodes::Chip8::OP_00EE:
         std::cout << PC << " Return from subroutine at " << stack[SP] << "\n";
@@ -109,7 +109,6 @@ void chip8::emuCycle() {
       }
       break;
     case Opcodes::Chip8::OP_1NNN:
-      // std::cout << "Hit opcode " << std::hex << opcode << "\n";
       std::cout << PC << " Jump to " << ((opcode & 0x0FFF)) << "\n";
 
       PC = opcode & 0x0FFF;
@@ -122,7 +121,6 @@ void chip8::emuCycle() {
       PC = (opcode & 0x0FFF);
       break;
     case Opcodes::Chip8::OP_3XNN:
-      // std::cout << "Hit opcode " << std::hex << opcode << "\n";
       std::cout << PC << " Skip if V[" << ((opcode & 0x0F00) >> 8)
                 << "] == " << (opcode & 0x00FF) << "\n";
 
@@ -144,7 +142,7 @@ void chip8::emuCycle() {
       }
       break;
     case Opcodes::Chip8::OP_5XY0:
-      std::cout << "Hit opcode " << std::hex << opcode << "\n";
+      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
       break;
     case Opcodes::Chip8::OP_6XNN:
       // Load immediate value NN into VX
@@ -164,11 +162,11 @@ void chip8::emuCycle() {
     case 0x8000:
       switch (opcode & 0xF00F) {
       case Opcodes::Chip8::OP_8XY0:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         PC += 2;
         break;
       case Opcodes::Chip8::OP_8XY1:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         break;
       case Opcodes::Chip8::OP_8XY2:
         std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to "
@@ -179,7 +177,7 @@ void chip8::emuCycle() {
         PC += 2;
         break;
       case Opcodes::Chip8::OP_8XY3:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         break;
       case Opcodes::Chip8::OP_8XY4: {
         std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
@@ -198,17 +196,17 @@ void chip8::emuCycle() {
         break;
       }
       case Opcodes::Chip8::OP_8XY5:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         PC += 2;
         break;
       case Opcodes::Chip8::OP_8XY6:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         break;
       case Opcodes::Chip8::OP_8XY7:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         break;
       case Opcodes::Chip8::OP_8XYE:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         break;
       default:
         std::cerr << "Unknown opcode: " << std::hex << opcode << "\n";
@@ -216,7 +214,7 @@ void chip8::emuCycle() {
       }
       break;
     case Opcodes::Chip8::OP_9XY0:
-      std::cout << "Hit opcode " << std::hex << opcode << "\n";
+      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
 
       PC += 2;
       break;
@@ -227,10 +225,10 @@ void chip8::emuCycle() {
       PC += 2;
       break;
     case Opcodes::Chip8::OP_BNNN:
-      std::cout << "Hit opcode " << std::hex << opcode << "\n";
+      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
       break;
     case Opcodes::Chip8::OP_CXNN:
-      std::cout << "Hit opcode " << std::hex << opcode << "\n";
+      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
       PC += 2;
       break;
     case Opcodes::Chip8::OP_DXYN: {
@@ -314,14 +312,14 @@ void chip8::emuCycle() {
         PC += 2;
         break;
       case Opcodes::Chip8::OP_FX0A:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         break;
       case Opcodes::Chip8::OP_FX18:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         PC += 2;
         break;
       case Opcodes::Chip8::OP_FX1E:
-        std::cout << "Hit opcode " << std::hex << opcode << "\n";
+        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
         break;
       case Opcodes::Chip8::OP_FX29:
         std::cout << PC << " Set I to location of sprite corresponding to V["
@@ -343,11 +341,11 @@ void chip8::emuCycle() {
       case 0xF005:
         switch (opcode & 0xF0FF) {
         case Opcodes::Chip8::OP_FX15:
-          std::cout << "Hit opcode " << std::hex << opcode << "\n";
+          std::cerr << "Hit opcode " << std::hex << opcode << "\n";
           PC += 2;
           break;
         case Opcodes::Chip8::OP_FX55:
-          std::cout << "Hit opcode " << std::hex << opcode << "\n";
+          std::cerr << "Hit opcode " << std::hex << opcode << "\n";
           break;
         case Opcodes::Chip8::OP_FX65: {
           std::cout << PC << " Copy memory from " << I << "..."

@@ -58,6 +58,7 @@ int main(int argc, char **argv) {
       }
       SDL_RenderPresent(render);
       SDL_RenderClear(render);
+      Chip.drawFlag = false;
       // drawGraphics();
     }
 
