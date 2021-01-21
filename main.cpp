@@ -4,6 +4,7 @@
 
 #define HEIGHT 32 * 10
 #define WIDTH 64 * 10
+#define NUM_SQUARES 2048
 
 chip8 Chip;
 
@@ -22,6 +23,18 @@ int main(int argc, char **argv) {
                        WIDTH, HEIGHT, 0);
   SDL_Renderer *render = SDL_CreateRenderer(window, -1, 0);
 
+  // Setup each pixel as a rect so our display isn't horribly small.
+  SDL_Rect rects[NUM_SQUARES];
+  int iH = HEIGHT / 32;
+  int iW = WIDTH / 32;
+  int x = WIDTH / 2 - iW / 2;
+  int y = HEIGHT / 2 - iH / 2;
+  for (int i = 0; i < NUM_SQUARES; i++) {
+    rects[i].x = i / 32 * iH;
+    rects[i].y = i % 32 * iW / 2;
+    rects[i].w = iW / 2;
+    rects[i].h = iH;
+  }
 
   // Clear chip8 memory, and copy program into memory
   Chip.init();
@@ -34,7 +47,15 @@ int main(int argc, char **argv) {
     // 0x00E0 - Clear screen
     // 0xDXYN - Draw sprite
     if (Chip.drawFlag) {
-      SDL_SetRenderDrawColor(render, 10, 10, 10, 255);
+      for (int i = 0; i < NUM_SQUARES; i++) {
+        if (Chip.gfx[i]) {
+          SDL_SetRenderDrawColor(render, 255, 255, 255, 255);
+        } else {
+          SDL_SetRenderDrawColor(render, 10, 10, 10, 255);
+        }
+
+        SDL_RenderFillRect(render, &rects[i]);
+      }
       SDL_RenderPresent(render);
       SDL_RenderClear(render);
       // drawGraphics();

@@ -103,6 +103,8 @@ public:
   void setKeys();
 
   bool drawFlag;
+  unsigned char gfx[64 * 32];
+
   static std::map<unsigned char, unsigned char> HexToFontCharLoc;
 
 private:
@@ -115,7 +117,6 @@ private:
   unsigned short SP;
   unsigned short stack[16];
 
-  unsigned char gfx[64 * 32];
   unsigned char key[16];
 
   unsigned char delay_timer;
