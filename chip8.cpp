@@ -340,7 +340,10 @@ void chip8::emuCycle() {
       std::cerr << "Hit opcode " << std::hex << opcode << "\n";
       break;
     case Opcodes::Chip8::OP_FX18:
-      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+      std::cout << PC << " Set sound timer to V[" << ((opcode & 0x0F00) >> 8) << "].\n";
+
+      sound_timer = V[(opcode & 0x0F00) >> 8];
+
       PC += 2;
       break;
     case Opcodes::Chip8::OP_FX1E:
@@ -366,7 +369,11 @@ void chip8::emuCycle() {
     case 0xF005:
       switch (opcode & 0xF0FF) {
       case Opcodes::Chip8::OP_FX15:
-        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+        std::cout << PC << " Set delay timer to V[" << ((opcode & 0x0F00) >> 8)
+                  << "].\n";
+
+        delay_timer = V[(opcode & 0x0F00) >> 8];
+
         PC += 2;
         break;
       case Opcodes::Chip8::OP_FX55:
@@ -406,7 +413,6 @@ void chip8::emuCycle() {
   if (sound_timer > 0) {
     if (sound_timer == 1) {
       std::cout << "BEEP!\n";
-      std::exit(0);
     }
 
     --sound_timer;
