@@ -17,7 +17,7 @@ void setupInput() {
 }
 
 int main(int argc, char **argv) {
-  std::chrono::time_point<std::chrono::high_resolution_clock> begin, end;
+  std::chrono::time_point<std::chrono::steady_clock> begin, end;
   setupInput();
 
   // SDL2 init stuff goes here
@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
   Chip.load();
 
   for (;;) {
-    begin = std::chrono::high_resolution_clock::now();
+    begin = std::chrono::steady_clock::now();
     Chip.emuCycle();
 
     // This flag is only set by two opcodes
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
       // drawGraphics();
     }
 
-    end = std::chrono::high_resolution_clock::now();
+    end = std::chrono::steady_clock::now();
 
     // TODO: Clean this up for obvious reasons!
     // 16 is approximately 1/60, or 60 Hz in ms.
@@ -77,9 +77,9 @@ int main(int argc, char **argv) {
     do {
       // Store key states for each cycle
       Chip.setKeys();
-      end = std::chrono::high_resolution_clock::now();
+      end = std::chrono::steady_clock::now();
     } while (std::chrono::duration_cast<std::chrono::milliseconds>(end - begin)
-                 .count() > 16);
+                 .count() <= 8);
   }
 
   SDL_DestroyRenderer(render);
