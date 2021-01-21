@@ -2,6 +2,9 @@
 #include <SDL2/SDL.h>
 #include <iostream>
 
+#define HEIGHT 32 * 10
+#define WIDTH 64 * 10
+
 chip8 Chip;
 
 void setupInput() {
@@ -12,9 +15,13 @@ void setupInput() {
 }
 
 int main(int argc, char **argv) {
-  // SDL2 init stuff goes here
-  // setupGraphics();
   setupInput();
+  // SDL2 init stuff goes here
+  SDL_Window *window =
+      SDL_CreateWindow("Chip8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                       WIDTH, HEIGHT, 0);
+  SDL_Renderer *render = SDL_CreateRenderer(window, -1, 0);
+
 
   // Clear chip8 memory, and copy program into memory
   Chip.init();
@@ -27,6 +34,9 @@ int main(int argc, char **argv) {
     // 0x00E0 - Clear screen
     // 0xDXYN - Draw sprite
     if (Chip.drawFlag) {
+      SDL_SetRenderDrawColor(render, 10, 10, 10, 255);
+      SDL_RenderPresent(render);
+      SDL_RenderClear(render);
       // drawGraphics();
     }
 
@@ -34,5 +44,8 @@ int main(int argc, char **argv) {
     Chip.setKeys();
   }
 
+  SDL_DestroyRenderer(render);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
   return 0;
 }

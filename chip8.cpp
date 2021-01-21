@@ -402,16 +402,23 @@ void chip8::setKeys() {
   SDL_Event e;
 
   while (SDL_PollEvent(&e)) {
-    std::cerr << "anything?\n";
-    if (e.type == SDL_QUIT) {
+    switch (e.type) {
+    case SDL_QUIT:
       std::exit(0);
-    }
-    if (e.type == SDL_KEYDOWN) {
-      std::cerr << "We got keydown\n";
-
+      break;
+    case SDL_KEYDOWN:
       if (KeySymToIndex.find(e.key.keysym.sym) != KeySymToIndex.end()) {
-        std::cerr << "We got a key!\n";
+        std::cerr << "Keydown: " << e.key.keysym.sym << "\n";
+        key[KeySymToIndex[e.key.keysym.sym]] = 1;
       }
+      break;
+    case SDL_KEYUP:
+      if (KeySymToIndex.find(e.key.keysym.sym) != KeySymToIndex.end()) {
+        std::cerr << "Keyup: " << e.key.keysym.sym << "\n";
+        key[KeySymToIndex[e.key.keysym.sym]] = 0;
+      }
+    default:
+      std::cerr << "Unhandled event.\n";
     }
   }
 }
