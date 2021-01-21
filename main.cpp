@@ -1,5 +1,6 @@
 #include "chip8.h"
 #include <SDL2/SDL.h>
+#include <chrono>
 #include <iostream>
 
 #define HEIGHT 32 * 10
@@ -16,7 +17,9 @@ void setupInput() {
 }
 
 int main(int argc, char **argv) {
+  std::chrono::time_point<std::chrono::high_resolution_clock> begin, end;
   setupInput();
+
   // SDL2 init stuff goes here
   SDL_Window *window =
       SDL_CreateWindow("Chip8", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -41,6 +44,7 @@ int main(int argc, char **argv) {
   Chip.load();
 
   for (;;) {
+    begin = std::chrono::high_resolution_clock::now();
     Chip.emuCycle();
 
     // This flag is only set by two opcodes
@@ -62,8 +66,20 @@ int main(int argc, char **argv) {
       // drawGraphics();
     }
 
-    // Store key states for each cycle
-    Chip.setKeys();
+    end = std::chrono::high_resolution_clock::now();
+
+    // TODO: Clean this up for obvious reasons!
+    // 16 is approximately 1/60, or 60 Hz in ms.
+    // this is a do/while loop because even if the condition isn't true we
+    // should still execute the loop at least once.  Basically we are trying to
+    // wait until at least 1/60th of a second has passed for each emulation
+    // cycle for usability / accuracy.
+    do {
+      // Store key states for each cycle
+      Chip.setKeys();
+      end = std::chrono::high_resolution_clock::now();
+    } while (std::chrono::duration_cast<std::chrono::milliseconds>(end - begin)
+                 .count() > 16);
   }
 
   SDL_DestroyRenderer(render);
