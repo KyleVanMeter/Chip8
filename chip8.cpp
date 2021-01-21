@@ -2,6 +2,7 @@
 #include <SDL2/SDL.h>
 #include <fstream>
 #include <iostream>
+#include <random>
 #include <sstream>
 #include <string.h>
 
@@ -64,6 +65,8 @@ void chip8::load() {
  * Fetch, decode, execute opcodes, and update timers
  */
 void chip8::emuCycle() {
+  std::default_random_engine gen;
+  std::uniform_int_distribution<int> distribution(0, 255);
 #if OP_DEBUG != 1
   opcode = memory[PC] << 8 | memory[PC + 1];
 #endif
@@ -253,10 +256,15 @@ void chip8::emuCycle() {
     case Opcodes::Chip8::OP_BNNN:
       std::cerr << "Hit opcode " << std::hex << opcode << "\n";
       break;
-    case Opcodes::Chip8::OP_CXNN:
-      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+    case Opcodes::Chip8::OP_CXNN: {
+      std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8)
+                << "] = Random byte & " << ((opcode & 0x00FF) >> 4) << "\n";
+
+      V[(opcode & 0x0F00) >> 8] = distribution(gen) & ((opcode & 0x00FF) >> 4);
+
       PC += 2;
       break;
+    }
     case Opcodes::Chip8::OP_DXYN: {
       // Display n-byte sprite starting at I @ (V[X], V[Y]), & V[F] = 1
       unsigned short x = V[(opcode & 0x0F00) >> 8];
