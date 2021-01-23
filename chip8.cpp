@@ -4,7 +4,14 @@
 #include <iostream>
 #include <random>
 #include <sstream>
+#include <cstring>
 #include <string.h>
+
+std::string intToString(int in) {
+  std::stringstream ss;
+  ss << std::hex << in;
+  return ss.str();
+}
 
 static std::map<unsigned char, unsigned char> KeySymToIndex{
 
@@ -28,9 +35,7 @@ void chip8::init() {
   SP = 0;
 
   // load fontset
-  for (int i = 0; i < 80; ++i) {
-    memory[i] = fontset[i];
-  }
+  std::memcpy(memory, fontset, sizeof fontset);
 
   // for (unsigned char i = 0; i < 15; ++i) {
   //  HexToFontCharLoc[i] = i * 5; // 5 is the row length for the fontset.
@@ -50,12 +55,12 @@ void chip8::load() {
         memory[i + 0x200] = block[i];
       }
     } else {
-      std::cerr << "broke" << std::endl;
+      throw std::runtime_error("Failed to read file");
     }
 
     delete[] block;
   } else {
-    std::cerr << "Failed to open file PONG" << std::endl;
+    throw std::runtime_error("Failed to open file");
   }
 }
 
@@ -95,8 +100,7 @@ void chip8::emuCycle() {
       std::cout << "Hit opcode " << std::hex << opcode << "\n";
       break;
     default:
-      std::cerr << "Unknown opcode: " << std::hex << opcode << "\n";
-      std::exit(-1);
+      throw std::runtime_error("Unknown opcode in 0: " + intToString(opcode) + "\n");
     }
     break;
   case Opcodes::Chip8::OP_1NNN:
@@ -229,8 +233,8 @@ void chip8::emuCycle() {
       std::cerr << "Hit opcode " << std::hex << opcode << "\n";
       break;
     default:
-      std::cerr << "Unknown opcode: " << std::hex << opcode << "\n";
-      std::exit(-1);
+      throw std::runtime_error("Unknown opcode in 8: " + intToString(opcode) +
+                               "\n");
     }
     break;
   case Opcodes::Chip8::OP_9XY0:
@@ -281,7 +285,7 @@ void chip8::emuCycle() {
           }
 
           // XOR eval pixel with display pixel
-          gfx[(x + xline + ((y + yline) * 64))] ^= 1;
+          gfx[(x + xline + ((y + yline) * 64)) % (64 * 32)] ^= 1;
         }
       }
     }
@@ -323,8 +327,8 @@ void chip8::emuCycle() {
 
       break;
     default:
-      std::cerr << "Unknown opcode in E: " << std::hex << opcode << "\n";
-      std::exit(-1);
+      throw std::runtime_error("Unknown opcode in E: " + intToString(opcode) +
+                               "\n");
     }
     break;
   case 0xF000:
@@ -392,18 +396,18 @@ void chip8::emuCycle() {
         break;
       }
       default:
-        std::cerr << "Unknown opcode in F005: " << std::hex << opcode << "\n";
-        std::exit(-1);
+        throw std::runtime_error("Unknown opcode in F005: " + intToString(opcode) +
+                                 "\n");
       }
       break;
     default:
-      std::cerr << "Unknown opcode in F: " << std::hex << opcode << "\n";
-      std::exit(-1);
+      throw std::runtime_error(
+          "Unknown opcode in F: " + intToString(opcode) + "\n");
     }
     break;
   default:
-    std::cerr << "Unknown opcode in default: " << std::hex << opcode << "\n";
-    std::exit(-1);
+    throw std::runtime_error("Unknown opcode: " + intToString(opcode) +
+                             "\n");
   }
 
   if (delay_timer > 0) {
@@ -432,13 +436,11 @@ void chip8::setKeys() {
       break;
     case SDL_KEYDOWN:
       if (KeySymToIndex.find(e.key.keysym.sym) != KeySymToIndex.end()) {
-        std::cerr << "Keydown: " << e.key.keysym.sym << "\n";
         key[KeySymToIndex[e.key.keysym.sym]] = 1;
       }
       break;
     case SDL_KEYUP:
       if (KeySymToIndex.find(e.key.keysym.sym) != KeySymToIndex.end()) {
-        std::cerr << "Keyup: " << e.key.keysym.sym << "\n";
         key[KeySymToIndex[e.key.keysym.sym]] = 0;
       }
     default:

@@ -16,6 +16,14 @@ void setupInput() {
   }
 }
 
+void run() {
+  try {
+    
+  } catch (std::exception &e) {
+    std::cerr << "ERR: " << e.what();
+    std::exit(-1);
+  }
+}
 int main(int argc, char **argv) {
   std::chrono::time_point<std::chrono::steady_clock> begin, end;
   setupInput();
@@ -79,7 +87,7 @@ int main(int argc, char **argv) {
       Chip.setKeys();
       end = std::chrono::steady_clock::now();
     } while (std::chrono::duration_cast<std::chrono::milliseconds>(end - begin)
-                 .count() <= 8);
+                 .count() <= 10);
   }
 
   SDL_DestroyRenderer(render);
