@@ -1,11 +1,13 @@
 #include "chip8.h"
-#include <SDL2/SDL.h>
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <random>
 #include <sstream>
-#include <cstring>
 #include <string.h>
+#include <vector>
+
+#include <SDL2/SDL.h>
 
 std::string intToString(int in) {
   std::stringstream ss;
@@ -43,24 +45,13 @@ void chip8::init() {
 }
 
 void chip8::load() {
-  if (std::ifstream file{"PONG", std::ios::binary | std::ios::ate}) {
-    char *block;
-    std::streampos size = file.tellg();
-
-    block = new char[size];
-
-    file.seekg(0);
-    if (file.read(&block[0], size)) {
-      for (int i = 0; i < size; ++i) {
-        memory[i + 0x200] = block[i];
-      }
-    } else {
-      throw std::runtime_error("Failed to read file");
-    }
-
-    delete[] block;
+  std::ifstream file("PONG1", std::ios::binary | std::ios::in);
+  if (file.good()) {
+    std::vector<char> bytes((std::istreambuf_iterator<char>(file)),
+                            (std::istreambuf_iterator<char>()));
+    std::memcpy(memory + 0x200, bytes.data(), bytes.size());
   } else {
-    throw std::runtime_error("Failed to open file");
+    throw std::runtime_error("File '' not found.");
   }
 }
 
@@ -100,7 +91,8 @@ void chip8::emuCycle() {
       std::cout << "Hit opcode " << std::hex << opcode << "\n";
       break;
     default:
-      throw std::runtime_error("Unknown opcode in 0: " + intToString(opcode) + "\n");
+      throw std::runtime_error("Unknown opcode in 0: " + intToString(opcode) +
+                               "\n");
     }
     break;
   case Opcodes::Chip8::OP_1NNN:
@@ -344,7 +336,8 @@ void chip8::emuCycle() {
       std::cerr << "Hit opcode " << std::hex << opcode << "\n";
       break;
     case Opcodes::Chip8::OP_FX18:
-      std::cout << PC << " Set sound timer to V[" << ((opcode & 0x0F00) >> 8) << "].\n";
+      std::cout << PC << " Set sound timer to V[" << ((opcode & 0x0F00) >> 8)
+                << "].\n";
 
       sound_timer = V[(opcode & 0x0F00) >> 8];
 
@@ -396,18 +389,17 @@ void chip8::emuCycle() {
         break;
       }
       default:
-        throw std::runtime_error("Unknown opcode in F005: " + intToString(opcode) +
-                                 "\n");
+        throw std::runtime_error(
+            "Unknown opcode in F005: " + intToString(opcode) + "\n");
       }
       break;
     default:
-      throw std::runtime_error(
-          "Unknown opcode in F: " + intToString(opcode) + "\n");
+      throw std::runtime_error("Unknown opcode in F: " + intToString(opcode) +
+                               "\n");
     }
     break;
   default:
-    throw std::runtime_error("Unknown opcode: " + intToString(opcode) +
-                             "\n");
+    throw std::runtime_error("Unknown opcode: " + intToString(opcode) + "\n");
   }
 
   if (delay_timer > 0) {
