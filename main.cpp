@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
 
   // Clear chip8 memory, and copy program into memory
   Chip.init();
-  Chip.load();
+  Chip.load("PONG");
 
   View viewer("Chip8", WIDTH, HEIGHT, 10);
   unsigned char *rgb = static_cast<unsigned char *>(

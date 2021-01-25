@@ -16,7 +16,6 @@ std::string intToString(int in) {
 }
 
 static std::map<unsigned char, unsigned char> KeySymToIndex{
-
     {49, 0},   {50, 1},   {51, 2},  {52, 3},  {113, 4},  {119, 5},
     {101, 6},  {114, 7},  {97, 8},  {115, 9}, {100, 10}, {102, 11},
     {122, 12}, {120, 13}, {99, 14}, {118, 15}};
@@ -25,8 +24,8 @@ std::map<unsigned char, unsigned char> chip8::HexToFontCharLoc{
     {0x1, 0},  {0x2, 5},  {0x3, 10}, {0x4, 15}, {0x5, 20},
     {0x6, 25}, {0x7, 30}, {0x8, 35}, {0x9, 40}, {0xA, 45},
     {0xB, 50}, {0xC, 55}, {0xD, 60}, {0xE, 65}, {0xF, 70}};
-/*
 
+/*
  * Initialize registers, and memory once zeroed
  */
 void chip8::init() {
@@ -44,14 +43,14 @@ void chip8::init() {
   //}
 }
 
-void chip8::load() {
-  std::ifstream file("PONG1", std::ios::binary | std::ios::in);
+void chip8::load(std::string fileName) {
+  std::ifstream file(fileName, std::ios::binary | std::ios::in);
   if (file.good()) {
     std::vector<char> bytes((std::istreambuf_iterator<char>(file)),
                             (std::istreambuf_iterator<char>()));
     std::memcpy(memory + 0x200, bytes.data(), bytes.size());
   } else {
-    throw std::runtime_error("File '' not found.");
+    throw std::runtime_error("File '" + fileName + "' not found.");
   }
 }
 

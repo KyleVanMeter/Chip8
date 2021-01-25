@@ -98,7 +98,7 @@ static const Chip8 All[] = {
 class chip8 {
 public:
   void init();
-  void load();
+  void load(std::string fileName);
   void emuCycle();
   void setKeys();
 
