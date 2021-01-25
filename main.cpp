@@ -5,13 +5,12 @@
 #include "chip8.h"
 #include "view.h"
 
-#define HEIGHT 32
-#define WIDTH 64
-#define NUM_SQUARES 2048
-
 chip8 Chip;
 
 int main(int argc, char **argv) {
+  constexpr int HEIGHT = 32;
+  constexpr int WIDTH = 64;
+  constexpr int NUM_SQUARES = HEIGHT * WIDTH;
   std::chrono::time_point<std::chrono::steady_clock> begin, end;
 
   // Clear chip8 memory, and copy program into memory
@@ -53,8 +52,10 @@ int main(int argc, char **argv) {
     }
   } catch (std::exception &e) {
     std::cerr << "ERR: " << e.what();
+    std::free(rgb);
     std::exit(-1);
   }
 
+  std::free(rgb);
   return 0;
 }
