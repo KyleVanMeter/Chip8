@@ -2,6 +2,7 @@
 #define __CHIP8_H__
 
 #include <map>
+#include <array>
 
 static const unsigned char fontset[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -120,7 +121,7 @@ private:
   unsigned short SP;
   unsigned short stack[16];
 
-  unsigned char key[16];
+  std::array<unsigned char, 16> key;
 
   unsigned char delay_timer;
   unsigned char sound_timer;

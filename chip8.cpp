@@ -7,6 +7,7 @@
 #include <sstream>
 #include <string.h>
 #include <vector>
+#include <algorithm>
 
 #include <SDL2/SDL.h>
 
@@ -30,6 +31,8 @@ std::map<unsigned char, unsigned char> chip8::HexToFontCharLoc{
  * Initialize registers, and memory once zeroed
  */
 void chip8::init() {
+  this->key.fill(0);
+
   // Program starts at 0x200, reset opcode, index, and stack pointer to 0
   PC = 0x200;
   opcode = 0;
@@ -349,8 +352,15 @@ void chip8::emuCycle() {
       V[(opcode & 0x0F00) >> 8] = delay_timer;
       PC += 2;
       break;
-    case Opcodes::Chip8::OP_FX0A:
-      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+    case Opcodes::Chip8::OP_FX0A: {
+      std::cout << PC << " Wait for keypress...\n";
+
+      auto result = std::find(key.begin(), key.end(), 1);
+      if (result != std::end(key)) {
+        std::cout << "    Key pressed.\n";
+        PC += 2;
+      }
+    }
       break;
     case Opcodes::Chip8::OP_FX18:
       std::cout << PC << " Set sound timer to V[" << ((opcode & 0x0F00) >> 8)
