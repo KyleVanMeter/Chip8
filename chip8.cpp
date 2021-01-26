@@ -160,7 +160,12 @@ void chip8::emuCycle() {
       PC += 2;
       break;
     case Opcodes::Chip8::OP_8XY1:
-      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+      std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
+                << ((opcode & 0x0F00) >> 8) << "] | V["
+                << ((opcode & 0x00F0) >> 4) << "]\n";
+
+      V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
+      PC += 2;
       break;
     case Opcodes::Chip8::OP_8XY2:
       std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to "
