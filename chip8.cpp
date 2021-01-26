@@ -1,4 +1,5 @@
 #include "chip8.h"
+#include <chrono>
 #include <cstring>
 #include <fstream>
 #include <iostream>
@@ -58,7 +59,8 @@ void chip8::load(std::string fileName) {
  * Fetch, decode, execute opcodes, and update timers
  */
 void chip8::emuCycle() {
-  std::default_random_engine gen;
+  std::default_random_engine gen(
+      std::chrono::system_clock::now().time_since_epoch().count());
   std::uniform_int_distribution<int> distribution(0, 255);
 
   opcode = memory[PC] << 8 | memory[PC + 1];
@@ -229,13 +231,22 @@ void chip8::emuCycle() {
     }
     break;
   case Opcodes::Chip8::OP_9XY0:
-    std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+    std::cout << PC << " Skip next instruction if V["
+              << ((opcode & 0x0F00) >> 8) << "] != V["
+              << ((opcode & 0x00F0) >> 4) << "].  ";
 
-    PC += 2;
+    if (V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4]) {
+      std::cout << "Skipped!\n";
+      PC += 4;
+    } else {
+      std::cout << "Not skipped!\n";
+      PC += 2;
+    }
     break;
   case Opcodes::Chip8::OP_ANNN:
     // Set I to NNN
     std::cout << PC << " Set I to " << (opcode & 0x0FFF) << "\n";
+
     I = opcode & 0x0FFF;
     PC += 2;
     break;
@@ -247,7 +258,6 @@ void chip8::emuCycle() {
               << "] = Random byte & " << ((opcode & 0x00FF) >> 4) << "\n";
 
     V[(opcode & 0x0F00) >> 8] = distribution(gen) & ((opcode & 0x00FF) >> 4);
-
     PC += 2;
     break;
   }
@@ -343,7 +353,11 @@ void chip8::emuCycle() {
       PC += 2;
       break;
     case Opcodes::Chip8::OP_FX1E:
-      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+      std::cout << PC << " Set I to I + V[" << ((opcode & 0x0F00) >> 8)
+                << "]\n";
+
+      I += V[(opcode & 0x0F00) >> 8];
+      PC += 2;
       break;
     case Opcodes::Chip8::OP_FX29:
       std::cout << PC << " Set I to location of sprite corresponding to V["
