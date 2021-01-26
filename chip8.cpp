@@ -1,4 +1,5 @@
 #include "chip8.h"
+#include <algorithm>
 #include <chrono>
 #include <cstring>
 #include <fstream>
@@ -7,7 +8,6 @@
 #include <sstream>
 #include <string.h>
 #include <vector>
-#include <algorithm>
 
 #include <SDL2/SDL.h>
 
@@ -355,13 +355,20 @@ void chip8::emuCycle() {
     case Opcodes::Chip8::OP_FX0A: {
       std::cout << PC << " Wait for keypress...\n";
 
+      // Potential problem here: As we have implemented so far several keys can
+      // be pressed at once.  I am not sure if that is typical for chip8
+      // emulators, or is not expected to be possible by some ROMs.  Either way
+      // this presents a problem as we can only store one key value in V[x], and
+      // have no way of judging which key that should be in the case of multiple
+      // values.  Therefore we pick the first result.
       auto result = std::find(key.begin(), key.end(), 1);
       if (result != std::end(key)) {
-        std::cout << "    Key pressed.\n";
+        std::cout << "    Key pressed.  Setting V[" << ((opcode & 0x0F00) >> 8)
+                  << "] to 1.\n";
+        V[(opcode & 0x0F00) >> 8] = std::distance(key.begin(), result);
         PC += 2;
       }
-    }
-      break;
+    } break;
     case Opcodes::Chip8::OP_FX18:
       std::cout << PC << " Set sound timer to V[" << ((opcode & 0x0F00) >> 8)
                 << "].\n";
