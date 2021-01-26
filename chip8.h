@@ -1,3 +1,6 @@
+#ifndef __CHIP8_H__
+#define __CHIP8_H__
+
 #include <map>
 
 static const unsigned char fontset[80] = {
@@ -122,3 +125,5 @@ private:
   unsigned char delay_timer;
   unsigned char sound_timer;
 };
+
+#endif

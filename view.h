@@ -1,3 +1,6 @@
+#ifndef __VIEW_H__
+#define __VIEW_H__
+
 #include <SDL2/SDL.h>
 #include <string>
 
@@ -15,3 +18,5 @@ private:
   SDL_Renderer *_render;
   SDL_Texture *_texture;
 };
+
+#endif
