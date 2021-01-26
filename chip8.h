@@ -107,7 +107,7 @@ public:
   void setKeys();
 
   bool drawFlag;
-  unsigned char gfx[64 * 32];
+  std::array<unsigned char, 64 * 32> gfx;
 
   static std::map<unsigned char, unsigned char> HexToFontCharLoc;
 

@@ -84,7 +84,8 @@ void chip8::emuCycle() {
     case Opcodes::Chip8::OP_00E0:
       std::cout << PC << " Clear display.\n";
 
-      std::memset(gfx, 0, sizeof(gfx));
+      // std::memset(gfx, 0, sizeof(gfx));
+      gfx.fill(0);
       PC += 2;
       break;
     case Opcodes::Chip8::OP_00EE:

@@ -1,6 +1,7 @@
 #include <chrono>
 #include <cstring>
 #include <iostream>
+#include <array>
 
 #include "chip8.h"
 #include "inputparser.h"
@@ -37,7 +38,7 @@ int main(int argc, char **argv) {
         Chip.emuCycle();
 
         if (Chip.drawFlag) {
-          viewer.CopyToRGB24(Chip.gfx, rgb);
+          viewer.CopyToRGB24(std::data(Chip.gfx), rgb);
           viewer.SetFrame(rgb, HEIGHT);
           viewer.Update();
 

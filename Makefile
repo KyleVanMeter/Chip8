@@ -2,7 +2,7 @@ CXX=g++
 SDL_LIB=-L/usr/lib -lSDL2 -Wl,-rpath=/usr/lib
 SDL_INCLUDE=-I/usr/include
 HEADER=-I.
-CXXFLAGS=-Wall -std=c++11 $(SDL_INCLUDE)
+CXXFLAGS=-Wall -std=c++17 $(SDL_INCLUDE)
 DEPS=chip8.h view.h
 OBJ=chip8.o main.o view.o
 RM=rm -f
