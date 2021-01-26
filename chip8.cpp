@@ -79,7 +79,10 @@ void chip8::emuCycle() {
       std::cerr << "Hit opcode " << std::hex << opcode << "\n";
       break;
     case Opcodes::Chip8::OP_00E0:
-      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+      std::cout << PC << " Clear display.\n";
+
+      std::memset(gfx, 0, sizeof(gfx));
+      PC += 2;
       break;
     case Opcodes::Chip8::OP_00EE:
       std::cout << PC << " Return from subroutine at " << stack[SP] << "\n";
