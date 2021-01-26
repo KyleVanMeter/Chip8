@@ -386,9 +386,19 @@ void chip8::emuCycle() {
 
         PC += 2;
         break;
-      case Opcodes::Chip8::OP_FX55:
-        std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+      case Opcodes::Chip8::OP_FX55: {
+        std::cout << PC << " Copy registers V[0] through V["
+                  << ((opcode & 0x0F00) >> 8)
+                  << "] into memory starting at I: " << I << ".\n";
+        unsigned char X = ((opcode & 0x0F00) >> 8);
+
+        for (int i = 0; i < X; i++) {
+          memory[I + i] = V[i];
+        }
+
+        PC += 2;
         break;
+      }
       case Opcodes::Chip8::OP_FX65: {
         std::cout << PC << " Copy memory from " << I << "..."
                   << I + ((opcode & 0x0F00) >> 8) << " into V[0..."
@@ -449,7 +459,7 @@ void chip8::setKeys() {
         key[KeySymToIndex[e.key.keysym.sym]] = 0;
       }
     default:
-      std::cerr << "Unhandled event.\n";
+      std::cout << "Unhandled event.\n";
     }
   }
 }
