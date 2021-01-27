@@ -240,7 +240,12 @@ void chip8::emuCycle() {
       PC += 2;
       break;
     case Opcodes::Chip8::OP_8XYE:
-      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+      std::cout << PC << " Set V[0xF] to MSB of V[" << ((opcode & 0x0F00) >> 8)
+                << ", then multiply it by 2.\n";
+
+      V[0xF] = V[((opcode & 0x0F00) >> 8)] > 0x80;
+      V[(opcode & 0x0F00) >> 8] <<= 1;
+      PC += 2;
       break;
     default:
       throw std::runtime_error("Unknown opcode in 8: " + intToString(opcode) +
