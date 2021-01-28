@@ -113,13 +113,13 @@ public:
 
 private:
   unsigned int opcode;
-  unsigned char memory[4096];
-  unsigned char V[16];
+  std::array<unsigned char, 4096> memory;
+  std::array<unsigned char, 16> V;
 
   unsigned short I;
   unsigned short PC;
   unsigned short SP;
-  unsigned short stack[16];
+  std::array<unsigned char, 16> stack;
 
   std::array<unsigned char, 16> key;
 
