@@ -1,5 +1,4 @@
 #define CATCH_CONFIG_MAIN
-#include <algorithm>
 #include <catch/catch.hpp>
 #include "../chip8.h"
 

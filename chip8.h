@@ -1,6 +1,7 @@
 #ifndef __CHIP8_H__
 #define __CHIP8_H__
 
+#include "IReader.hpp"
 #include <map>
 #include <array>
 
@@ -102,7 +103,8 @@ static const Chip8 All[] = {
 class chip8 {
 public:
   void init();
-  void load(std::string fileName);
+  // void load(std::string fileName);
+  void load(IReader& reader);
   void emuCycle();
   void setKeys();
 

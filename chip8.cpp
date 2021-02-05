@@ -1,4 +1,5 @@
 #include "chip8.h"
+#include "IReader.hpp"
 #include <algorithm>
 #include <chrono>
 #include <cstring>
@@ -47,6 +48,7 @@ void chip8::init() {
   //}
 }
 
+/*
 void chip8::load(std::string fileName) {
   std::ifstream file(fileName, std::ios::binary | std::ios::in);
   if (file.good()) {
@@ -56,6 +58,11 @@ void chip8::load(std::string fileName) {
   } else {
     throw std::runtime_error("File '" + fileName + "' not found.");
   }
+}
+*/
+void chip8::load(IReader &reader) {
+  std::vector<char> data = reader.get();
+  std::memcpy(memory + 0x200, data.data(), data.size());
 }
 
 /*
