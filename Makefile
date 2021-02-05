@@ -15,7 +15,10 @@ LDFLAGS = $(SDL_LIB)
 Chip8: $(OBJ)
 	$(CXX) $(HEADER) -o $@ $^ $(LDFLAGS) $(CXXFLAGS)
 
-.PHONY: Chip8
+.PHONY: Chip8 tests
+
+tests: $(OBJ)
+	$(CXX) $(CXXFLAGS) chip8.o $(LDFLAGS) -o ctest test/test.cpp
 
 clean:
 	$(RM) $(OBJ)

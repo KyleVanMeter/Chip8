@@ -111,20 +111,6 @@ public:
 
   static std::map<unsigned char, unsigned char> HexToFontCharLoc;
 
-private:
-  unsigned int opcode;
-  unsigned char memory[4096];
-  unsigned char V[16];
-
-  unsigned short I;
-  unsigned short PC;
-  unsigned short SP;
-  unsigned short stack[16];
-
-  std::array<unsigned char, 16> key;
-
-  unsigned char delay_timer;
-  unsigned char sound_timer;
   void OP_001N();
   void OP_00E0();
   void OP_00EE();
@@ -163,6 +149,21 @@ private:
   void OP_FX55();
   void OP_FX65();
   void OP_UNHANDLED();
+
+private:
+  unsigned int opcode;
+  unsigned char memory[4096];
+  unsigned char V[16];
+
+  unsigned short I;
+  unsigned short PC;
+  unsigned short SP;
+  unsigned short stack[16];
+
+  std::array<unsigned char, 16> key;
+
+  unsigned char delay_timer;
+  unsigned char sound_timer;
 };
 
 #endif
