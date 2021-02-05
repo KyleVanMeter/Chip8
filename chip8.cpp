@@ -72,30 +72,19 @@ void chip8::emuCycle() {
   case 0x0000:
     switch (opcode & 0x00FF) {
     case Opcodes::Chip8::OP_0NNN:
-      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
-      PC += 2;
-
-      std::exit(0);
-
+      OP_0NNN();
       break;
     case Opcodes::Chip8::OP_001N:
-      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+      OP_001N();
       break;
     case Opcodes::Chip8::OP_00E0:
-      std::cout << PC << " Clear display.\n";
-
-      std::memset(gfx, 0, sizeof(gfx));
-      PC += 2;
+      OP_00E0();
       break;
     case Opcodes::Chip8::OP_00EE:
-      std::cout << PC << " Return from subroutine at " << stack[SP] << "\n";
-
-      PC = stack[SP];
-      --SP;
-      PC += 2;
+      OP_00EE();
       break;
     case Opcodes::Chip8::OP_00FA:
-      std::cout << "Hit opcode " << std::hex << opcode << "\n";
+      OP_00FA();
       break;
     default:
       throw std::runtime_error("Unknown opcode in 0: " + intToString(opcode) +
@@ -103,148 +92,55 @@ void chip8::emuCycle() {
     }
     break;
   case Opcodes::Chip8::OP_1NNN:
-    std::cout << PC << " Jump to " << ((opcode & 0x0FFF)) << "\n";
-
-    PC = opcode & 0x0FFF;
+    OP_1NNN();
     break;
   case Opcodes::Chip8::OP_2NNN:
-    std::cout << PC << " Call subroutine at " << (opcode & 0x0FFF) << "\n";
-
-    ++SP;
-    stack[SP] = PC;
-    PC = (opcode & 0x0FFF);
+    OP_2NNN();
     break;
   case Opcodes::Chip8::OP_3XNN:
-    std::cout << PC << " Skip if V[" << ((opcode & 0x0F00) >> 8)
-              << "] == " << (opcode & 0x00FF) << "\n";
-
-    if (V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF)) {
-      PC += 4;
-    } else {
-      PC += 2;
-    }
-
+    OP_3XNN();
     break;
   case Opcodes::Chip8::OP_4XNN:
-    std::cout << PC << " Skip if V[" << ((opcode & 0x0F00) >> 8)
-              << "] != " << (opcode & 0x00FF) << "\n";
-
-    if (V[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF)) {
-      PC += 4;
-    } else {
-      PC += 2;
-    }
+    OP_4XNN();
     break;
   case Opcodes::Chip8::OP_5XY0:
-    std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+    OP_5XY0();
     break;
   case Opcodes::Chip8::OP_6XNN:
-    // Load immediate value NN into VX
-    std::cout << PC << " Load immediate value " << (opcode & 0x00FF)
-              << " into V[" << ((opcode & 0x0F00) >> 8) << "]\n";
-    V[((opcode & 0x0F00) >> 8)] = (opcode & 0x00FF);
-    PC += 2;
+    OP_6XNN();
     break;
   case Opcodes::Chip8::OP_7XNN:
-    std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to "
-              << ((opcode & 0x00FF)) << " + V[" << ((opcode & 0x0F00) >> 8)
-              << "]\n";
-
-    V[(opcode & 0x0F00) >> 8] += (opcode & 0x00FF);
-    PC += 2;
+    OP_7XNN();
     break;
   case 0x8000:
     switch (opcode & 0xF00F) {
     case Opcodes::Chip8::OP_8XY0:
-      std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] = V["
-                << ((opcode & 0x00F0) >> 4) << "].";
-
-      V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
-      PC += 2;
+      OP_8XY0();
       break;
     case Opcodes::Chip8::OP_8XY1:
-      std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
-                << ((opcode & 0x0F00) >> 8) << "] | V["
-                << ((opcode & 0x00F0) >> 4) << "]\n";
-
-      V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
-      PC += 2;
+      OP_8XY1();
       break;
     case Opcodes::Chip8::OP_8XY2:
-      std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to "
-                << " V[" << ((opcode & 0x0F00) >> 8) << "] & V["
-                << ((opcode & 0x00F0) >> 4) << "]\n";
-
-      V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
-      PC += 2;
+      OP_8XY2();
       break;
     case Opcodes::Chip8::OP_8XY3:
-      std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to "
-                << " V[" << ((opcode & 0x0F00) >> 8) << "] ^ V["
-                << ((opcode & 0x00F0) >> 4) << "]\n";
-
-      V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
-      PC += 2;
+      OP_8XY3();
       break;
     case Opcodes::Chip8::OP_8XY4: {
-      std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
-                << ((opcode & 0x0F00) >> 8) << "] + V["
-                << ((opcode & 0x00F0) >> 4) << "].  ";
-
-      if (V[(opcode & 0x0F00) >> 8] + V[(opcode & 0x00F0) >> 4] > 255) {
-        std::cout << "V[f] = 1\n";
-        V[0xF] = 1;
-      } else {
-        std::cout << "V[f] = 0\n";
-        V[0xF] = 0;
-      }
-      V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
-      PC += 2;
+      OP_8XY4();
       break;
     }
     case Opcodes::Chip8::OP_8XY5:
-      std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
-                << ((opcode & 0x0F00) >> 8) << "] - V["
-                << ((opcode & 0x00F0) >> 4) << "].  ";
-
-      if (V[(opcode & 0x0F00) >> 8] > V[(opcode & 0x00F0) >> 4]) {
-        std::cout << "V[f] = 1\n";
-        V[0xF] = 1;
-      } else {
-        std::cout << "V[f] = 0\n";
-        V[0xF] = 0;
-      }
-
-      V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];
-      PC += 2;
+      OP_8XY5();
       break;
     case Opcodes::Chip8::OP_8XY6:
-      std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+      OP_8XY6();
       break;
     case Opcodes::Chip8::OP_8XY7:
-      std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
-                << ((opcode & 0x00F0) >> 4) << "] - V["
-                << ((opcode & 0x0F00) >> 8) << "].  ";
-
-      if (V[(opcode & 0x0F00) >> 8] < V[(opcode & 0x00F0) >> 4]) {
-        std::cout << "V[f] = 1\n";
-        V[0xF] = 1;
-      } else {
-        std::cout << "V[f] = 0\n";
-        V[0xF] = 0;
-      }
-
-      V[(opcode & 0x0F00) >> 8] =
-          V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8];
-      PC += 2;
+      OP_8XY7();
       break;
     case Opcodes::Chip8::OP_8XYE:
-      std::cout << PC << " Set V[0xF] to MSB of V[" << ((opcode & 0x0F00) >> 8)
-                << ", then multiply it by 2.\n";
-
-      V[0xF] = V[((opcode & 0x0F00) >> 8)] > 0x80;
-      V[(opcode & 0x0F00) >> 8] <<= 1;
-      PC += 2;
+      OP_8XYE();
       break;
     default:
       throw std::runtime_error("Unknown opcode in 8: " + intToString(opcode) +
@@ -252,101 +148,29 @@ void chip8::emuCycle() {
     }
     break;
   case Opcodes::Chip8::OP_9XY0:
-    std::cout << PC << " Skip next instruction if V["
-              << ((opcode & 0x0F00) >> 8) << "] != V["
-              << ((opcode & 0x00F0) >> 4) << "].  ";
-
-    if (V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4]) {
-      std::cout << "Skipped!\n";
-      PC += 4;
-    } else {
-      std::cout << "Not skipped!\n";
-      PC += 2;
-    }
+    OP_9XY0();
     break;
   case Opcodes::Chip8::OP_ANNN:
-    // Set I to NNN
-    std::cout << PC << " Set I to " << (opcode & 0x0FFF) << "\n";
-
-    I = opcode & 0x0FFF;
-    PC += 2;
+    OP_ANNN();
     break;
   case Opcodes::Chip8::OP_BNNN:
-    std::cerr << "Hit opcode " << std::hex << opcode << "\n";
+    OP_BNNN();
     break;
   case Opcodes::Chip8::OP_CXNN: {
-    std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8)
-              << "] = Random byte & " << ((opcode & 0x00FF) >> 4) << "\n";
-
-    V[(opcode & 0x0F00) >> 8] = distribution(gen) & ((opcode & 0x00FF) >> 4);
-    PC += 2;
+    OP_CXNN();
     break;
   }
   case Opcodes::Chip8::OP_DXYN: {
-    // Display n-byte sprite starting at I @ (V[X], V[Y]), & V[F] = 1
-    unsigned short x = V[(opcode & 0x0F00) >> 8];
-    unsigned short y = V[(opcode & 0x00F0) >> 4];
-    unsigned short n = opcode & 0x000F;
-    unsigned short pixel;
-
-    std::cout << PC << " Display " << n << "-byte sprite starting at " << I
-              << " @ (V[" << ((opcode & 0x0F00) >> 8) << "], V["
-              << ((opcode & 0x00F0) >> 4) << "])\n";
-
-    // Collision by default is 0
-    V[0xF] = 0;
-
-    for (int yline = 0; yline < n; yline++) {
-      pixel = memory[I + yline];
-      for (int xline = 0; xline < 8; xline++) {
-        // if current evaluated pixel is set to 1
-        if ((pixel & (0x80 >> xline)) != 0) {
-          // if current displayed pixel is set to 1 set V[0xF] = 1
-          if (gfx[(x + xline + ((y + yline) * 64))] == 1) {
-            V[0xF] = 1;
-          }
-
-          // XOR eval pixel with display pixel
-          gfx[(x + xline + ((y + yline) * 64)) % (64 * 32)] ^= 1;
-        }
-      }
-    }
-
-    drawFlag = true;
-    PC += 2;
+    OP_DXYN();
     break;
   }
   case 0xE000:
     switch (opcode & 0xF00F) {
     case Opcodes::Chip8::OP_EX9E:
-      // Skip next instruction if V[X] is pressed
-      std::cout << PC << " Skip next instruction if V["
-                << ((opcode & 0x0F00) >> 8) << "] is pressed.";
-
-      if (key[V[(opcode & 0x0F00) >> 8]] != 0) {
-        std::cout << "  Skipped!";
-        PC += 4;
-      } else {
-        std::cout << "  Not skipped!";
-        PC += 2;
-      }
-      std::cout << std::endl;
-
+      OP_EX9E();
       break;
     case Opcodes::Chip8::OP_EXA1:
-      // Skip next instruction if V[X] is pressed
-      std::cout << PC << " Skip next instruction if V["
-                << ((opcode & 0x0F00) >> 8) << "] is not pressed.";
-
-      if (key[V[(opcode & 0x0F00) >> 8]] != 0) {
-        std::cout << "  Not skipped!";
-        PC += 2;
-      } else {
-        std::cout << "  Skipped!";
-        PC += 4;
-      }
-      std::cout << std::endl;
-
+      OP_EXA1();
       break;
     default:
       throw std::runtime_error("Unknown opcode in E: " + intToString(opcode) +
@@ -356,96 +180,34 @@ void chip8::emuCycle() {
   case 0xF000:
     switch (opcode & 0xF00F) {
     case Opcodes::Chip8::OP_FX07:
-      std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8)
-                << "] to delay_timer (" << delay_timer << ")\n";
-
-      V[(opcode & 0x0F00) >> 8] = delay_timer;
-      PC += 2;
+      OP_FX07();
       break;
-    case Opcodes::Chip8::OP_FX0A: {
-      std::cout << PC << " Wait for keypress...\n";
-
-      // Potential problem here: As we have implemented so far several keys can
-      // be pressed at once.  I am not sure if that is typical for chip8
-      // emulators, or is not expected to be possible by some ROMs.  Either way
-      // this presents a problem as we can only store one key value in V[x], and
-      // have no way of judging which key that should be in the case of multiple
-      // values.  Therefore we pick the first result.
-      auto result = std::find(key.begin(), key.end(), 1);
-      if (result != std::end(key)) {
-        std::cout << "    Key pressed.  Setting V[" << ((opcode & 0x0F00) >> 8)
-                  << "] to 1.\n";
-        V[(opcode & 0x0F00) >> 8] = std::distance(key.begin(), result);
-        PC += 2;
-      }
-    } break;
+    case Opcodes::Chip8::OP_FX0A:
+      OP_FX0A();
+      break;
     case Opcodes::Chip8::OP_FX18:
-      std::cout << PC << " Set sound timer to V[" << ((opcode & 0x0F00) >> 8)
-                << "].\n";
-
-      sound_timer = V[(opcode & 0x0F00) >> 8];
-
-      PC += 2;
+      OP_FX18();
       break;
     case Opcodes::Chip8::OP_FX1E:
-      std::cout << PC << " Set I to I + V[" << ((opcode & 0x0F00) >> 8)
-                << "]\n";
-
-      I += V[(opcode & 0x0F00) >> 8];
-      PC += 2;
+      OP_FX1E();
       break;
     case Opcodes::Chip8::OP_FX29:
-      std::cout << PC << " Set I to location of sprite corresponding to V["
-                << ((opcode & 0x0F00) >> 8) << "]\n";
-
-      I = HexToFontCharLoc[V[((opcode & 0x0F00) >> 8)]];
-      PC += 2;
+      OP_FX29();
       break;
-    case Opcodes::Chip8::OP_FX33: {
-      std::cout << PC << " Store BCD of V[" << ((opcode & 0x0F00) >> 8)
-                << "] representation at " << I << "..." << I + 2 << "\n";
-      memory[I] = V[(opcode & 0x0F00) >> 8] / 100;
-      memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
-      memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
-
-      PC += 2;
+    case Opcodes::Chip8::OP_FX33:
+      OP_FX33();
       break;
-    }
     case 0xF005:
       switch (opcode & 0xF0FF) {
       case Opcodes::Chip8::OP_FX15:
-        std::cout << PC << " Set delay timer to V[" << ((opcode & 0x0F00) >> 8)
-                  << "].\n";
-
-        delay_timer = V[(opcode & 0x0F00) >> 8];
-
-        PC += 2;
+        OP_FX15();
         break;
-      case Opcodes::Chip8::OP_FX55: {
-        std::cout << PC << " Copy registers V[0] through V["
-                  << ((opcode & 0x0F00) >> 8)
-                  << "] into memory starting at I: " << I << ".\n";
-        unsigned char X = ((opcode & 0x0F00) >> 8);
-
-        for (int i = 0; i < X; i++) {
-          memory[I + i] = V[i];
-        }
-
-        PC += 2;
+      case Opcodes::Chip8::OP_FX55:
+        OP_FX55();
         break;
-      }
-      case Opcodes::Chip8::OP_FX65: {
-        std::cout << PC << " Copy memory from " << I << "..."
-                  << I + ((opcode & 0x0F00) >> 8) << " into V[0..."
-                  << ((opcode & 0x0F00) >> 8) << "]\n";
-        unsigned char X = ((opcode & 0x0F00) >> 8);
-
-        for (int i = 0; i < X; ++i) {
-          V[i] = memory[i + I];
-        }
-        PC += 2;
+      case Opcodes::Chip8::OP_FX65:
+        OP_FX65();
         break;
-      }
       default:
         throw std::runtime_error(
             "Unknown opcode in F005: " + intToString(opcode) + "\n");
@@ -497,4 +259,390 @@ void chip8::setKeys() {
       std::cout << "Unhandled event.\n";
     }
   }
+}
+
+void chip8::OP_001N() {
+  OP_UNHANDLED();
+}
+
+void chip8::OP_00E0() {
+  std::cout << PC << " Clear display.\n";
+
+  std::memset(gfx, 0, sizeof(gfx));
+  PC += 2;
+}
+
+void chip8::OP_00EE() {
+  std::cout << PC << " Return from subroutine at " << stack[SP] << "\n";
+
+  PC = stack[SP];
+  --SP;
+  PC += 2;
+}
+
+void chip8::OP_00FA() {
+  OP_UNHANDLED();
+}
+
+void chip8::OP_0NNN() {
+  // Ignored
+  std::cout << PC << " Ignored OP_0NNN\n";
+  PC += 2;
+}
+
+void chip8::OP_1NNN() {
+  std::cout << PC << " Jump to " << ((opcode & 0x0FFF)) << "\n";
+
+  PC = opcode & 0x0FFF;
+}
+
+void chip8::OP_2NNN() {
+  std::cout << PC << " Call subroutine at " << (opcode & 0x0FFF) << "\n";
+
+  ++SP;
+  stack[SP] = PC;
+  PC = (opcode & 0x0FFF);
+}
+
+void chip8::OP_3XNN() {
+  std::cout << PC << " Skip if V[" << ((opcode & 0x0F00) >> 8)
+            << "] == " << (opcode & 0x00FF) << "\n";
+
+  if (V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF)) {
+    PC += 4;
+  } else {
+    PC += 2;
+  }
+}
+
+void chip8::OP_4XNN() {
+  std::cout << PC << " Skip if V[" << ((opcode & 0x0F00) >> 8)
+            << "] != " << (opcode & 0x00FF) << "\n";
+
+  if (V[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF)) {
+    PC += 4;
+  } else {
+    PC += 2;
+  }
+}
+
+void chip8::OP_5XY0() {
+  OP_UNHANDLED();
+}
+
+void chip8::OP_6XNN() {
+  // Load immediate value NN into VX
+  std::cout << PC << " Load immediate value " << (opcode & 0x00FF) << " into V["
+            << ((opcode & 0x0F00) >> 8) << "]\n";
+  V[((opcode & 0x0F00) >> 8)] = (opcode & 0x00FF);
+  PC += 2;
+}
+
+void chip8::OP_7XNN() {
+  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to "
+            << ((opcode & 0x00FF)) << " + V[" << ((opcode & 0x0F00) >> 8)
+            << "]\n";
+
+  V[(opcode & 0x0F00) >> 8] += (opcode & 0x00FF);
+  PC += 2;
+}
+
+void chip8::OP_8XY0() {
+  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] = V["
+            << ((opcode & 0x00F0) >> 4) << "].";
+
+  V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
+  PC += 2;
+}
+
+void chip8::OP_8XY1() {
+  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
+            << ((opcode & 0x0F00) >> 8) << "] | V[" << ((opcode & 0x00F0) >> 4)
+            << "]\n";
+
+  V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
+  PC += 2;
+}
+
+void chip8::OP_8XY2() {
+  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to "
+            << " V[" << ((opcode & 0x0F00) >> 8) << "] & V["
+            << ((opcode & 0x00F0) >> 4) << "]\n";
+
+  V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
+  PC += 2;
+}
+
+void chip8::OP_8XY3() {
+  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to "
+            << " V[" << ((opcode & 0x0F00) >> 8) << "] ^ V["
+            << ((opcode & 0x00F0) >> 4) << "]\n";
+
+  V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
+  PC += 2;
+}
+
+void chip8::OP_8XY4() {
+  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
+            << ((opcode & 0x0F00) >> 8) << "] + V[" << ((opcode & 0x00F0) >> 4)
+            << "].  ";
+
+  if (V[(opcode & 0x0F00) >> 8] + V[(opcode & 0x00F0) >> 4] > 255) {
+    std::cout << "V[f] = 1\n";
+    V[0xF] = 1;
+  } else {
+    std::cout << "V[f] = 0\n";
+    V[0xF] = 0;
+  }
+  V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
+  PC += 2;
+}
+
+void chip8::OP_8XY5() {
+  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
+            << ((opcode & 0x0F00) >> 8) << "] - V[" << ((opcode & 0x00F0) >> 4)
+            << "].  ";
+
+  if (V[(opcode & 0x0F00) >> 8] > V[(opcode & 0x00F0) >> 4]) {
+    std::cout << "V[f] = 1\n";
+    V[0xF] = 1;
+  } else {
+    std::cout << "V[f] = 0\n";
+    V[0xF] = 0;
+  }
+
+  V[(opcode & 0x0F00) >> 8] -= V[(opcode & 0x00F0) >> 4];
+  PC += 2;
+}
+
+void chip8::OP_8XY6() {
+  OP_UNHANDLED();
+}
+
+void chip8::OP_8XY7() {
+  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
+            << ((opcode & 0x00F0) >> 4) << "] - V[" << ((opcode & 0x0F00) >> 8)
+            << "].  ";
+
+  if (V[(opcode & 0x0F00) >> 8] < V[(opcode & 0x00F0) >> 4]) {
+    std::cout << "V[f] = 1\n";
+    V[0xF] = 1;
+  } else {
+    std::cout << "V[f] = 0\n";
+    V[0xF] = 0;
+  }
+
+  V[(opcode & 0x0F00) >> 8] =
+      V[(opcode & 0x00F0) >> 4] - V[(opcode & 0x0F00) >> 8];
+  PC += 2;
+}
+
+void chip8::OP_8XYE() {
+  std::cout << PC << " Set V[0xF] to MSB of V[" << ((opcode & 0x0F00) >> 8)
+            << ", then multiply it by 2.\n";
+
+  V[0xF] = V[((opcode & 0x0F00) >> 8)] > 0x80;
+  V[(opcode & 0x0F00) >> 8] <<= 1;
+  PC += 2;
+}
+
+void chip8::OP_9XY0() {
+  std::cout << PC << " Skip next instruction if V[" << ((opcode & 0x0F00) >> 8)
+            << "] != V[" << ((opcode & 0x00F0) >> 4) << "].  ";
+
+  if (V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4]) {
+    std::cout << "Skipped!\n";
+    PC += 4;
+  } else {
+    std::cout << "Not skipped!\n";
+    PC += 2;
+  }
+}
+
+void chip8::OP_ANNN() {
+  // Set I to NNN
+  std::cout << PC << " Set I to " << (opcode & 0x0FFF) << "\n";
+
+  I = opcode & 0x0FFF;
+  PC += 2;
+}
+
+void chip8::OP_BNNN() {
+  OP_UNHANDLED();
+}
+
+void chip8::OP_CXNN() {
+  std::default_random_engine gen(
+      std::chrono::system_clock::now().time_since_epoch().count());
+  std::uniform_int_distribution<int> distribution(0, 255);
+
+  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8)
+            << "] = Random byte & " << ((opcode & 0x00FF) >> 4) << "\n";
+
+  V[(opcode & 0x0F00) >> 8] = distribution(gen) & ((opcode & 0x00FF) >> 4);
+  PC += 2;
+}
+
+void chip8::OP_DXYN() {
+    // Display n-byte sprite starting at I @ (V[X], V[Y]), & V[F] = 1
+    unsigned short x = V[(opcode & 0x0F00) >> 8];
+    unsigned short y = V[(opcode & 0x00F0) >> 4];
+    unsigned short n = opcode & 0x000F;
+    unsigned short pixel;
+
+    std::cout << PC << " Display " << n << "-byte sprite starting at " << I
+              << " @ (V[" << ((opcode & 0x0F00) >> 8) << "], V["
+              << ((opcode & 0x00F0) >> 4) << "])\n";
+
+    // Collision by default is 0
+    V[0xF] = 0;
+
+    for (int yline = 0; yline < n; yline++) {
+      pixel = memory[I + yline];
+      for (int xline = 0; xline < 8; xline++) {
+        // if current evaluated pixel is set to 1
+        if ((pixel & (0x80 >> xline)) != 0) {
+          // if current displayed pixel is set to 1 set V[0xF] = 1
+          if (gfx[(x + xline + ((y + yline) * 64))] == 1) {
+            V[0xF] = 1;
+          }
+
+          // XOR eval pixel with display pixel
+          gfx[(x + xline + ((y + yline) * 64)) % (64 * 32)] ^= 1;
+        }
+      }
+    }
+
+    drawFlag = true;
+    PC += 2;
+}
+
+void chip8::OP_EX9E() {
+  // Skip next instruction if V[X] is pressed
+  std::cout << PC << " Skip next instruction if V[" << ((opcode & 0x0F00) >> 8)
+            << "] is pressed.";
+
+  if (key[V[(opcode & 0x0F00) >> 8]] != 0) {
+    std::cout << "  Skipped!";
+    PC += 4;
+  } else {
+    std::cout << "  Not skipped!";
+    PC += 2;
+  }
+  std::cout << std::endl;
+}
+
+void chip8::OP_EXA1() {
+  // Skip next instruction if V[X] is pressed
+  std::cout << PC << " Skip next instruction if V[" << ((opcode & 0x0F00) >> 8)
+            << "] is not pressed.";
+
+  if (key[V[(opcode & 0x0F00) >> 8]] != 0) {
+    std::cout << "  Not skipped!";
+    PC += 2;
+  } else {
+    std::cout << "  Skipped!";
+    PC += 4;
+  }
+  std::cout << std::endl;
+}
+
+void chip8::OP_FX07() {
+  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8)
+            << "] to delay_timer (" << delay_timer << ")\n";
+
+  V[(opcode & 0x0F00) >> 8] = delay_timer;
+  PC += 2;
+}
+
+void chip8::OP_FX0A() {
+  std::cout << PC << " Wait for keypress...\n";
+
+  // Potential problem here: As we have implemented so far several keys can
+  // be pressed at once.  I am not sure if that is typical for chip8
+  // emulators, or is not expected to be possible by some ROMs.  Either way
+  // this presents a problem as we can only store one key value in V[x], and
+  // have no way of judging which key that should be in the case of multiple
+  // values.  Therefore we pick the first result.
+  auto result = std::find(key.begin(), key.end(), 1);
+  if (result != std::end(key)) {
+    std::cout << "    Key pressed.  Setting V[" << ((opcode & 0x0F00) >> 8)
+              << "] to 1.\n";
+    V[(opcode & 0x0F00) >> 8] = std::distance(key.begin(), result);
+    PC += 2;
+  }
+}
+
+void chip8::OP_FX15() {
+  std::cout << PC << " Set delay timer to V[" << ((opcode & 0x0F00) >> 8)
+            << "].\n";
+
+  delay_timer = V[(opcode & 0x0F00) >> 8];
+
+  PC += 2;
+}
+
+void chip8::OP_FX18() {
+  std::cout << PC << " Set sound timer to V[" << ((opcode & 0x0F00) >> 8)
+            << "].\n";
+
+  sound_timer = V[(opcode & 0x0F00) >> 8];
+
+  PC += 2;
+}
+
+void chip8::OP_FX1E() {
+  std::cout << PC << " Set I to I + V[" << ((opcode & 0x0F00) >> 8) << "]\n";
+
+  I += V[(opcode & 0x0F00) >> 8];
+  PC += 2;
+}
+
+void chip8::OP_FX29() {
+  std::cout << PC << " Set I to location of sprite corresponding to V["
+            << ((opcode & 0x0F00) >> 8) << "]\n";
+
+  I = HexToFontCharLoc[V[((opcode & 0x0F00) >> 8)]];
+  PC += 2;
+}
+
+void chip8::OP_FX33() {
+  std::cout << PC << " Store BCD of V[" << ((opcode & 0x0F00) >> 8)
+            << "] representation at " << I << "..." << I + 2 << "\n";
+  memory[I] = V[(opcode & 0x0F00) >> 8] / 100;
+  memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
+  memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
+
+  PC += 2;
+}
+
+void chip8::OP_FX55() {
+  std::cout << PC << " Copy registers V[0] through V["
+            << ((opcode & 0x0F00) >> 8) << "] into memory starting at I: " << I
+            << ".\n";
+  unsigned char X = ((opcode & 0x0F00) >> 8);
+
+  for (int i = 0; i < X; i++) {
+    memory[I + i] = V[i];
+  }
+
+  PC += 2;
+}
+
+void chip8::OP_FX65() {
+  std::cout << PC << " Copy memory from " << I << "..."
+            << I + ((opcode & 0x0F00) >> 8) << " into V[0..."
+            << ((opcode & 0x0F00) >> 8) << "]\n";
+  unsigned char X = ((opcode & 0x0F00) >> 8);
+
+  for (int i = 0; i < X; ++i) {
+    V[i] = memory[i + I];
+  }
+  PC += 2;
+}
+
+void chip8::OP_UNHANDLED() {
+  std::stringstream ss;
+  ss << "Unhandled opcode: " << std::hex << opcode << "\n";
+  throw std::runtime_error(ss.str());
 }
