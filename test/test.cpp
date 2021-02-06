@@ -1,6 +1,6 @@
 #define CATCH_CONFIG_MAIN
 #include "../IReader.hpp"
-#include "../chip8.h"
+#include "../chip8.hpp"
 #include <catch/catch.hpp>
 
 TEST_CASE("Chip8 initializes.") {
@@ -78,5 +78,25 @@ TEST_CASE("TestChip8 executes instructions.") {
     REQUIRE(T.GetSP() == 1);
     REQUIRE(T.GetPC() == 0xFFF);
     REQUIRE(T.GetStack(T.GetSP()) == 0x200);
+  }
+
+  SECTION("OP_3XKK SE Vx, byte.  Not Equal.") {
+    std::vector<char> opcodes{(char)0x31, (char)0xFF};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+
+    REQUIRE(T.GetPC() == 0x202);
+  }
+
+  SECTION("OP_3XKK SE Vx, byte.  Equal.") {
+    std::vector<char> opcodes{(char)0x31, (char)0x00};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+
+    REQUIRE(T.GetPC() == 0x204);
   }
 }
