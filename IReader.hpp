@@ -17,13 +17,17 @@ public:
   ~FileReader() = default;
 
 private:
-  std::string name;
+  std::string _name;
 };
 
 class TestReader : public IReader {
-  TestReader(std::string &fileName);
+public:
+  TestReader(std::vector<char> &data);
   std::vector<char> get();
   ~TestReader() = default;
+
+private:
+  std::vector<char> _data;
 };
 
 #endif

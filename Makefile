@@ -3,8 +3,8 @@ SDL_LIB=-L/usr/lib -lSDL2 -Wl,-rpath=/usr/lib
 SDL_INCLUDE=-I/usr/include
 HEADER=-I.
 CXXFLAGS=-Wall -std=c++11 $(SDL_INCLUDE)
-DEPS=chip8.h view.h IReader.hpp
-OBJ=chip8.o main.o view.o IReader.o
+DEPS=chip8.h view.h IReader.hpp IChip.hpp
+OBJ=chip8.o main.o view.o IReader.o IChip.o
 RM=rm -f
 
 LDFLAGS = $(SDL_LIB)
@@ -18,7 +18,7 @@ Chip8: $(OBJ)
 .PHONY: Chip8 tests
 
 tests: $(OBJ)
-	$(CXX) $(CXXFLAGS) chip8.o $(LDFLAGS) -o ctest test/test.cpp
+	$(CXX) $(CXXFLAGS) chip8.o IReader.o $(LDFLAGS) -o ctest test/test.cpp
 
 clean:
 	$(RM) $(OBJ)

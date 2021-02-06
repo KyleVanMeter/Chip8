@@ -2,6 +2,7 @@
 #include <cstring>
 #include <iostream>
 
+#include "IChip.hpp"
 #include "IReader.hpp"
 #include "chip8.h"
 #include "inputparser.h"
@@ -26,7 +27,8 @@ int main(int argc, char **argv) {
     Chip.init();
     // Chip.load(fileName);
     FileReader reader(fileName);
-    Chip.load(reader);
+    ChipParam param;
+    Chip.load(reader, param);
 
     View viewer("Chip8", WIDTH, HEIGHT, 10);
     unsigned char *rgb = static_cast<unsigned char *>(

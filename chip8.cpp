@@ -18,6 +18,11 @@ std::string intToString(int in) {
   return ss.str();
 }
 
+char Opcodes::EndianSwap(Chip8 in) {
+  return ((in & 0xFF00) >> 8) | ((in & 0x00FF) << 8);
+  // memory[PC] << 8 | memory[PC + 1];
+}
+
 static std::map<unsigned char, unsigned char> KeySymToIndex{
     {49, 0},   {50, 1},   {51, 2},  {52, 3},  {113, 4},  {119, 5},
     {101, 6},  {114, 7},  {97, 8},  {115, 9}, {100, 10}, {102, 11},
@@ -32,6 +37,7 @@ std::map<unsigned char, unsigned char> chip8::HexToFontCharLoc{
  * Initialize registers, and memory once zeroed
  */
 void chip8::init() {
+  /*
   this->key.fill(0);
 
   // Program starts at 0x200, reset opcode, index, and stack pointer to 0
@@ -39,13 +45,10 @@ void chip8::init() {
   opcode = 0;
   I = 0;
   SP = 0;
+  */
 
   // load fontset
-  std::memcpy(memory, fontset, sizeof fontset);
-
-  // for (unsigned char i = 0; i < 15; ++i) {
-  //  HexToFontCharLoc[i] = i * 5; // 5 is the row length for the fontset.
-  //}
+  std::memcpy(params.memory, fontset, sizeof fontset);
 }
 
 /*
@@ -60,9 +63,10 @@ void chip8::load(std::string fileName) {
   }
 }
 */
-void chip8::load(IReader &reader) {
+void chip8::load(IReader &reader, IChipParam &param) {
+  params = param;
   std::vector<char> data = reader.get();
-  std::memcpy(memory + 0x200, data.data(), data.size());
+  std::memcpy(params.memory + 0x200, data.data(), data.size());
 }
 
 /*
@@ -73,11 +77,11 @@ void chip8::emuCycle() {
       std::chrono::system_clock::now().time_since_epoch().count());
   std::uniform_int_distribution<int> distribution(0, 255);
 
-  opcode = memory[PC] << 8 | memory[PC + 1];
+  params.opcode = params.memory[params.PC] << 8 | params.memory[params.PC + 1];
 
-  switch (opcode & 0xF000) {
+  switch (params.opcode & 0xF000) {
   case 0x0000:
-    switch (opcode & 0x00FF) {
+    switch (params.opcode & 0x00FF) {
     case Opcodes::Chip8::OP_0NNN:
       OP_0NNN();
       break;
@@ -94,8 +98,8 @@ void chip8::emuCycle() {
       OP_00FA();
       break;
     default:
-      throw std::runtime_error("Unknown opcode in 0: " + intToString(opcode) +
-                               "\n");
+      throw std::runtime_error(
+          "Unknown opcode in 0: " + intToString(params.opcode) + "\n");
     }
     break;
   case Opcodes::Chip8::OP_1NNN:
@@ -120,7 +124,7 @@ void chip8::emuCycle() {
     OP_7XNN();
     break;
   case 0x8000:
-    switch (opcode & 0xF00F) {
+    switch (params.opcode & 0xF00F) {
     case Opcodes::Chip8::OP_8XY0:
       OP_8XY0();
       break;
@@ -150,8 +154,8 @@ void chip8::emuCycle() {
       OP_8XYE();
       break;
     default:
-      throw std::runtime_error("Unknown opcode in 8: " + intToString(opcode) +
-                               "\n");
+      throw std::runtime_error(
+          "Unknown opcode in 8: " + intToString(params.opcode) + "\n");
     }
     break;
   case Opcodes::Chip8::OP_9XY0:
@@ -172,7 +176,7 @@ void chip8::emuCycle() {
     break;
   }
   case 0xE000:
-    switch (opcode & 0xF00F) {
+    switch (params.opcode & 0xF00F) {
     case Opcodes::Chip8::OP_EX9E:
       OP_EX9E();
       break;
@@ -180,8 +184,8 @@ void chip8::emuCycle() {
       OP_EXA1();
       break;
     default:
-      throw std::runtime_error("Unknown opcode in E: " + intToString(opcode) +
-                               "\n");
+      throw std::runtime_error(
+          "Unknown opcode in E: " + intToString(params.opcode) + "\n");
     }
     break;
   case 0xF000:
@@ -205,7 +209,7 @@ void chip8::emuCycle() {
       OP_FX33();
       break;
     case 0xF005:
-      switch (opcode & 0xF0FF) {
+      switch (params.opcode & 0xF0FF) {
       case Opcodes::Chip8::OP_FX15:
         OP_FX15();
         break;
@@ -217,28 +221,29 @@ void chip8::emuCycle() {
         break;
       default:
         throw std::runtime_error(
-            "Unknown opcode in F005: " + intToString(opcode) + "\n");
+            "Unknown opcode in F005: " + intToString(params.opcode) + "\n");
       }
       break;
     default:
-      throw std::runtime_error("Unknown opcode in F: " + intToString(opcode) +
-                               "\n");
+      throw std::runtime_error(
+          "Unknown opcode in F: " + intToString(params.opcode) + "\n");
     }
     break;
   default:
-    throw std::runtime_error("Unknown opcode: " + intToString(opcode) + "\n");
+    throw std::runtime_error("Unknown opcode: " + intToString(params.opcode) +
+                             "\n");
   }
 
-  if (delay_timer > 0) {
-    --delay_timer;
+  if (params.delay_timer > 0) {
+    --params.delay_timer;
   }
 
-  if (sound_timer > 0) {
-    if (sound_timer == 1) {
+  if (params.sound_timer > 0) {
+    if (params.sound_timer == 1) {
       std::cout << "BEEP!\n";
     }
 
-    --sound_timer;
+    --params.sound_timer;
   }
 }
 
@@ -255,12 +260,12 @@ void chip8::setKeys() {
       break;
     case SDL_KEYDOWN:
       if (KeySymToIndex.find(e.key.keysym.sym) != KeySymToIndex.end()) {
-        key[KeySymToIndex[e.key.keysym.sym]] = 1;
+        params.key[KeySymToIndex[e.key.keysym.sym]] = 1;
       }
       break;
     case SDL_KEYUP:
       if (KeySymToIndex.find(e.key.keysym.sym) != KeySymToIndex.end()) {
-        key[KeySymToIndex[e.key.keysym.sym]] = 0;
+        params.key[KeySymToIndex[e.key.keysym.sym]] = 0;
       }
     default:
       std::cout << "Unhandled event.\n";
@@ -268,9 +273,7 @@ void chip8::setKeys() {
   }
 }
 
-void chip8::OP_001N() {
-  OP_UNHANDLED();
-}
+void chip8::OP_001N() { OP_UNHANDLED(); }
 
 void chip8::OP_00E0() {
   std::cout << PC << " Clear display.\n";
@@ -287,13 +290,11 @@ void chip8::OP_00EE() {
   PC += 2;
 }
 
-void chip8::OP_00FA() {
-  OP_UNHANDLED();
-}
+void chip8::OP_00FA() { OP_UNHANDLED(); }
 
 void chip8::OP_0NNN() {
   // Ignored
-  std::cout << PC << " Ignored OP_0NNN\n";
+  std::cout << PC << " " << std::hex << opcode << " Ignored OP_0NNN\n";
   PC += 2;
 }
 
@@ -333,9 +334,7 @@ void chip8::OP_4XNN() {
   }
 }
 
-void chip8::OP_5XY0() {
-  OP_UNHANDLED();
-}
+void chip8::OP_5XY0() { OP_UNHANDLED(); }
 
 void chip8::OP_6XNN() {
   // Load immediate value NN into VX
@@ -422,9 +421,7 @@ void chip8::OP_8XY5() {
   PC += 2;
 }
 
-void chip8::OP_8XY6() {
-  OP_UNHANDLED();
-}
+void chip8::OP_8XY6() { OP_UNHANDLED(); }
 
 void chip8::OP_8XY7() {
   std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
@@ -474,9 +471,7 @@ void chip8::OP_ANNN() {
   PC += 2;
 }
 
-void chip8::OP_BNNN() {
-  OP_UNHANDLED();
-}
+void chip8::OP_BNNN() { OP_UNHANDLED(); }
 
 void chip8::OP_CXNN() {
   std::default_random_engine gen(
@@ -491,37 +486,37 @@ void chip8::OP_CXNN() {
 }
 
 void chip8::OP_DXYN() {
-    // Display n-byte sprite starting at I @ (V[X], V[Y]), & V[F] = 1
-    unsigned short x = V[(opcode & 0x0F00) >> 8];
-    unsigned short y = V[(opcode & 0x00F0) >> 4];
-    unsigned short n = opcode & 0x000F;
-    unsigned short pixel;
+  // Display n-byte sprite starting at I @ (V[X], V[Y]), & V[F] = 1
+  unsigned short x = V[(opcode & 0x0F00) >> 8];
+  unsigned short y = V[(opcode & 0x00F0) >> 4];
+  unsigned short n = opcode & 0x000F;
+  unsigned short pixel;
 
-    std::cout << PC << " Display " << n << "-byte sprite starting at " << I
-              << " @ (V[" << ((opcode & 0x0F00) >> 8) << "], V["
-              << ((opcode & 0x00F0) >> 4) << "])\n";
+  std::cout << PC << " Display " << n << "-byte sprite starting at " << I
+            << " @ (V[" << ((opcode & 0x0F00) >> 8) << "], V["
+            << ((opcode & 0x00F0) >> 4) << "])\n";
 
-    // Collision by default is 0
-    V[0xF] = 0;
+  // Collision by default is 0
+  V[0xF] = 0;
 
-    for (int yline = 0; yline < n; yline++) {
-      pixel = memory[I + yline];
-      for (int xline = 0; xline < 8; xline++) {
-        // if current evaluated pixel is set to 1
-        if ((pixel & (0x80 >> xline)) != 0) {
-          // if current displayed pixel is set to 1 set V[0xF] = 1
-          if (gfx[(x + xline + ((y + yline) * 64))] == 1) {
-            V[0xF] = 1;
-          }
-
-          // XOR eval pixel with display pixel
-          gfx[(x + xline + ((y + yline) * 64)) % (64 * 32)] ^= 1;
+  for (int yline = 0; yline < n; yline++) {
+    pixel = memory[I + yline];
+    for (int xline = 0; xline < 8; xline++) {
+      // if current evaluated pixel is set to 1
+      if ((pixel & (0x80 >> xline)) != 0) {
+        // if current displayed pixel is set to 1 set V[0xF] = 1
+        if (gfx[(x + xline + ((y + yline) * 64))] == 1) {
+          V[0xF] = 1;
         }
+
+        // XOR eval pixel with display pixel
+        gfx[(x + xline + ((y + yline) * 64)) % (64 * 32)] ^= 1;
       }
     }
+  }
 
-    drawFlag = true;
-    PC += 2;
+  drawFlag = true;
+  PC += 2;
 }
 
 void chip8::OP_EX9E() {
