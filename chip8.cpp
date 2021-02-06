@@ -1,4 +1,4 @@
-#include "chip8.h"
+#include "chip8.hpp"
 #include "IReader.hpp"
 #include <algorithm>
 #include <chrono>

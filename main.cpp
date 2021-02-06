@@ -3,9 +3,9 @@
 #include <iostream>
 
 #include "IReader.hpp"
-#include "chip8.h"
-#include "inputparser.h"
-#include "view.h"
+#include "chip8.hpp"
+#include "inputparser.hpp"
+#include "view.hpp"
 
 chip8 Chip;
 

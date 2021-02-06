@@ -3,7 +3,7 @@ SDL_LIB=-L/usr/lib -lSDL2 -Wl,-rpath=/usr/lib
 SDL_INCLUDE=-I/usr/include
 HEADER=-I.
 CXXFLAGS=-Wall -std=c++11 $(SDL_INCLUDE)
-DEPS=chip8.h view.h IReader.hpp
+DEPS=chip8.hpp view.hpp IReader.hpp
 OBJ=chip8.o main.o view.o IReader.o
 RM=rm -f
 

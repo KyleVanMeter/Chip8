@@ -1,4 +1,4 @@
-#include "view.h"
+#include "view.hpp"
 
 #include <cstring>
 #include <iostream>
