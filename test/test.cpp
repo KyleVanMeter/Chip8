@@ -99,4 +99,24 @@ TEST_CASE("TestChip8 executes instructions.") {
 
     REQUIRE(T.GetPC() == 0x204);
   }
+
+  SECTION("OP_4XKK SNE Vx, byte.  Not Equal.") {
+    std::vector<char> opcodes{(char)0x41, (char)0xFF};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+
+    REQUIRE(T.GetPC() == 0x204);
+  }
+
+  SECTION("OP_4XKK SNE Vx, byte.  Equal.") {
+    std::vector<char> opcodes{(char)0x41, (char)0x00};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+
+    REQUIRE(T.GetPC() == 0x202);
+  }
 }
