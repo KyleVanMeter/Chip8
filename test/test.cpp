@@ -20,8 +20,6 @@ TEST_CASE("Chip8 initializes.") {
 }
 
 TEST_CASE("TestReader loads.") {
-  chip8 chip;
-  chip.init();
   std::vector<char> opcodes{(char)0x00E0};
 
   TestReader reader(opcodes);
@@ -44,7 +42,41 @@ TEST_CASE("chip8 executes instructions.") {
 
   chip.load(reader);
 
-  SECTION("opcode: 0x0010") {
-    chip.emuCycle();
+  SECTION("opcode: 0x0010") { chip.emuCycle(); }
+}
+
+TEST_CASE("TestChip8 constructor.") {
+  TestChip8 T = TestChip8();
+
+  SECTION("Test initial values.") {
+    REQUIRE(T.GetI() == 0);
+    REQUIRE(T.GetSP() == 0);
+    REQUIRE(T.GetPC() == 0x200);
+  }
+}
+
+TEST_CASE("TestChip8 executes instructions.") {
+  TestChip8 T = TestChip8();
+
+  SECTION("OP_1NNN JP addr.") {
+    std::vector<char> opcodes{(char)0x1F, (char)0xFF};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+
+    REQUIRE(T.GetPC() == 0xFFF);
+  }
+
+  SECTION("OP_2NNN CALL addr.") {
+    std::vector<char> opcodes{(char)0x2F, (char)0xFF};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+
+    REQUIRE(T.GetSP() == 1);
+    REQUIRE(T.GetPC() == 0xFFF);
+    REQUIRE(T.GetStack(T.GetSP()) == 0x200);
   }
 }

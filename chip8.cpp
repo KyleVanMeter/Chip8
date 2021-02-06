@@ -20,7 +20,6 @@ std::string intToString(int in) {
 
 char Opcodes::EndianSwap(Chip8 in) {
   return ((in & 0xFF00) >> 8) | ((in & 0x00FF) << 8);
-  // memory[PC] << 8 | memory[PC + 1];
 }
 
 static std::map<unsigned char, unsigned char> KeySymToIndex{
@@ -37,7 +36,6 @@ std::map<unsigned char, unsigned char> chip8::HexToFontCharLoc{
  * Initialize registers, and memory once zeroed
  */
 void chip8::init() {
-  /*
   this->key.fill(0);
 
   // Program starts at 0x200, reset opcode, index, and stack pointer to 0
@@ -45,10 +43,9 @@ void chip8::init() {
   opcode = 0;
   I = 0;
   SP = 0;
-  */
 
   // load fontset
-  std::memcpy(params.memory, fontset, sizeof fontset);
+  std::memcpy(memory, fontset, sizeof fontset);
 }
 
 /*
@@ -63,10 +60,10 @@ void chip8::load(std::string fileName) {
   }
 }
 */
-void chip8::load(IReader &reader, IChipParam &param) {
-  params = param;
+void chip8::load(IReader &reader) {
+  std::cout << std::hex << PC << "\n";
   std::vector<char> data = reader.get();
-  std::memcpy(params.memory + 0x200, data.data(), data.size());
+  std::memcpy(memory + 0x200, data.data(), data.size());
 }
 
 /*
@@ -77,11 +74,11 @@ void chip8::emuCycle() {
       std::chrono::system_clock::now().time_since_epoch().count());
   std::uniform_int_distribution<int> distribution(0, 255);
 
-  params.opcode = params.memory[params.PC] << 8 | params.memory[params.PC + 1];
+  opcode = memory[PC] << 8 | memory[PC + 1];
 
-  switch (params.opcode & 0xF000) {
+  switch (opcode & 0xF000) {
   case 0x0000:
-    switch (params.opcode & 0x00FF) {
+    switch (opcode & 0x00FF) {
     case Opcodes::Chip8::OP_0NNN:
       OP_0NNN();
       break;
@@ -98,8 +95,8 @@ void chip8::emuCycle() {
       OP_00FA();
       break;
     default:
-      throw std::runtime_error(
-          "Unknown opcode in 0: " + intToString(params.opcode) + "\n");
+      throw std::runtime_error("Unknown opcode in 0: " + intToString(opcode) +
+                               "\n");
     }
     break;
   case Opcodes::Chip8::OP_1NNN:
@@ -124,7 +121,7 @@ void chip8::emuCycle() {
     OP_7XNN();
     break;
   case 0x8000:
-    switch (params.opcode & 0xF00F) {
+    switch (opcode & 0xF00F) {
     case Opcodes::Chip8::OP_8XY0:
       OP_8XY0();
       break;
@@ -154,8 +151,8 @@ void chip8::emuCycle() {
       OP_8XYE();
       break;
     default:
-      throw std::runtime_error(
-          "Unknown opcode in 8: " + intToString(params.opcode) + "\n");
+      throw std::runtime_error("Unknown opcode in 8: " + intToString(opcode) +
+                               "\n");
     }
     break;
   case Opcodes::Chip8::OP_9XY0:
@@ -176,7 +173,7 @@ void chip8::emuCycle() {
     break;
   }
   case 0xE000:
-    switch (params.opcode & 0xF00F) {
+    switch (opcode & 0xF00F) {
     case Opcodes::Chip8::OP_EX9E:
       OP_EX9E();
       break;
@@ -184,8 +181,8 @@ void chip8::emuCycle() {
       OP_EXA1();
       break;
     default:
-      throw std::runtime_error(
-          "Unknown opcode in E: " + intToString(params.opcode) + "\n");
+      throw std::runtime_error("Unknown opcode in E: " + intToString(opcode) +
+                               "\n");
     }
     break;
   case 0xF000:
@@ -209,7 +206,7 @@ void chip8::emuCycle() {
       OP_FX33();
       break;
     case 0xF005:
-      switch (params.opcode & 0xF0FF) {
+      switch (opcode & 0xF0FF) {
       case Opcodes::Chip8::OP_FX15:
         OP_FX15();
         break;
@@ -221,29 +218,28 @@ void chip8::emuCycle() {
         break;
       default:
         throw std::runtime_error(
-            "Unknown opcode in F005: " + intToString(params.opcode) + "\n");
+            "Unknown opcode in F005: " + intToString(opcode) + "\n");
       }
       break;
     default:
-      throw std::runtime_error(
-          "Unknown opcode in F: " + intToString(params.opcode) + "\n");
+      throw std::runtime_error("Unknown opcode in F: " + intToString(opcode) +
+                               "\n");
     }
     break;
   default:
-    throw std::runtime_error("Unknown opcode: " + intToString(params.opcode) +
-                             "\n");
+    throw std::runtime_error("Unknown opcode: " + intToString(opcode) + "\n");
   }
 
-  if (params.delay_timer > 0) {
-    --params.delay_timer;
+  if (delay_timer > 0) {
+    --delay_timer;
   }
 
-  if (params.sound_timer > 0) {
-    if (params.sound_timer == 1) {
+  if (sound_timer > 0) {
+    if (sound_timer == 1) {
       std::cout << "BEEP!\n";
     }
 
-    --params.sound_timer;
+    --sound_timer;
   }
 }
 
@@ -260,12 +256,12 @@ void chip8::setKeys() {
       break;
     case SDL_KEYDOWN:
       if (KeySymToIndex.find(e.key.keysym.sym) != KeySymToIndex.end()) {
-        params.key[KeySymToIndex[e.key.keysym.sym]] = 1;
+        key[KeySymToIndex[e.key.keysym.sym]] = 1;
       }
       break;
     case SDL_KEYUP:
       if (KeySymToIndex.find(e.key.keysym.sym) != KeySymToIndex.end()) {
-        params.key[KeySymToIndex[e.key.keysym.sym]] = 0;
+        key[KeySymToIndex[e.key.keysym.sym]] = 0;
       }
     default:
       std::cout << "Unhandled event.\n";
@@ -647,4 +643,20 @@ void chip8::OP_UNHANDLED() {
   std::stringstream ss;
   ss << "Unhandled opcode: " << std::hex << opcode << "\n";
   throw std::runtime_error(ss.str());
+}
+
+TestChip8::TestChip8() { this->chip.init(); }
+void TestChip8::load(IReader &reader) { this->chip.load(reader); }
+void TestChip8::emuCycle() { this->chip.emuCycle(); }
+
+unsigned short TestChip8::GetI() const { return this->chip.I; }
+unsigned short TestChip8::GetPC() const { return this->chip.PC; }
+unsigned short TestChip8::GetSP() const { return this->chip.SP; }
+unsigned short TestChip8::GetStack(int index) const {
+  return this->chip.stack[index];
+}
+
+unsigned char TestChip8::GetV(int index) const { return this->chip.V[index]; }
+unsigned char TestChip8::GetMemory(int index) const {
+  return this->chip.memory[index];
 }

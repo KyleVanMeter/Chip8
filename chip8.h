@@ -1,10 +1,9 @@
 #ifndef __CHIP8_H__
 #define __CHIP8_H__
 
-#include "IChip.hpp"
 #include "IReader.hpp"
-#include <map>
 #include <array>
+#include <map>
 
 static const unsigned char fontset[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0
@@ -100,14 +99,16 @@ static const Chip8 All[] = {
     OP_CXNN, OP_DXYN, OP_EX9E, OP_EXA1, OP_FX07, OP_FX0A, OP_FX15, OP_FX18,
     OP_FX1E, OP_FX29, OP_FX33, OP_FX55, OP_FX65};
 
- char EndianSwap(Chip8 in);
-} // namespace Opcdoes
+char EndianSwap(Chip8 in);
+} // namespace Opcodes
+
+class TestChip8;
 
 class chip8 {
 public:
   void init();
   // void load(std::string fileName);
-  void load(IReader& reader, IChipParam& param);
+  void load(IReader &reader);
   void emuCycle();
   void setKeys();
 
@@ -116,7 +117,7 @@ public:
 
   static std::map<unsigned char, unsigned char> HexToFontCharLoc;
 
-  IChipParam params;
+  friend class TestChip8;
 
   void OP_001N();
   void OP_00E0();
@@ -158,7 +159,6 @@ public:
   void OP_UNHANDLED();
 
 private:
-  /*
   unsigned int opcode;
   unsigned char memory[4096];
   unsigned char V[16];
@@ -172,7 +172,24 @@ private:
 
   unsigned char delay_timer;
   unsigned char sound_timer;
-  */
+};
+
+class TestChip8 {
+public:
+  TestChip8();
+  void load(IReader &reader);
+  void emuCycle();
+
+  unsigned char GetMemory(int index) const;
+  unsigned char GetV(int index) const;
+
+  unsigned short GetI() const;
+  unsigned short GetPC() const;
+  unsigned short GetSP() const;
+  unsigned short GetStack(int index) const;
+
+private:
+  chip8 chip;
 };
 
 #endif
