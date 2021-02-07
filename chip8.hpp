@@ -180,6 +180,8 @@ public:
   void load(IReader &reader);
   void emuCycle();
 
+  unsigned int GetOpcode() const;
+
   unsigned char GetMemory(int index) const;
   unsigned char GetV(int index) const;
 

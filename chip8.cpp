@@ -649,6 +649,8 @@ TestChip8::TestChip8() { this->chip.init(); }
 void TestChip8::load(IReader &reader) { this->chip.load(reader); }
 void TestChip8::emuCycle() { this->chip.emuCycle(); }
 
+unsigned int TestChip8::GetOpcode() const { return this->chip.opcode; }
+
 unsigned short TestChip8::GetI() const { return this->chip.I; }
 unsigned short TestChip8::GetPC() const { return this->chip.PC; }
 unsigned short TestChip8::GetSP() const { return this->chip.SP; }

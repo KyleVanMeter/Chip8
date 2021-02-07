@@ -65,6 +65,7 @@ TEST_CASE("TestChip8 executes instructions.") {
 
     T.emuCycle();
 
+    REQUIRE(T.GetOpcode() == (Opcodes::Chip8::OP_1NNN | 0x0FFF));
     REQUIRE(T.GetPC() == 0xFFF);
   }
 
@@ -75,6 +76,7 @@ TEST_CASE("TestChip8 executes instructions.") {
 
     T.emuCycle();
 
+    REQUIRE(T.GetOpcode() == (Opcodes::Chip8::OP_2NNN | 0x0FFF));
     REQUIRE(T.GetSP() == 1);
     REQUIRE(T.GetPC() == 0xFFF);
     REQUIRE(T.GetStack(T.GetSP()) == 0x200);
@@ -87,6 +89,7 @@ TEST_CASE("TestChip8 executes instructions.") {
 
     T.emuCycle();
 
+    REQUIRE(T.GetOpcode() == (Opcodes::Chip8::OP_3XNN | 0x01FF));
     REQUIRE(T.GetPC() == 0x202);
   }
 
@@ -107,6 +110,7 @@ TEST_CASE("TestChip8 executes instructions.") {
 
     T.emuCycle();
 
+    REQUIRE(T.GetOpcode() == (Opcodes::Chip8::OP_4XNN | 0x01FF));
     REQUIRE(T.GetPC() == 0x204);
   }
 
@@ -117,6 +121,21 @@ TEST_CASE("TestChip8 executes instructions.") {
 
     T.emuCycle();
 
+    REQUIRE(T.GetOpcode() == (Opcodes::Chip8::OP_4XNN | 0x0100));
     REQUIRE(T.GetPC() == 0x202);
   }
+
+  SECTION("OP_5XY0 SE Vx, Vy.  Equal.") {
+    std::vector<char> opcodes{(char)0x50, (char)0x00};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+
+    REQUIRE(T.GetOpcode() == (Opcodes::Chip8::OP_5XY0));
+    REQUIRE(T.GetV(1) == T.GetV(1));
+    REQUIRE(T.GetPC() == 0x202);
+  }
+
+  SECTION("OP_5XY0 SE Vx, Vy.  Not Equal.") {}
 }
