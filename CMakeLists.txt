@@ -23,5 +23,8 @@ add_dependencies(${PROJECT_NAME} spdlog)
 target_link_libraries(Chip8 otherModule)
 target_include_directories(Chip8 PUBLIC "${PROJECT_SOURCE_DIR}")
 
+add_executable(Ctest test/test.cpp)
+target_link_libraries(Ctest otherModule)
+
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
