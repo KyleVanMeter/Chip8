@@ -9,7 +9,7 @@ target_link_libraries(otherModule -lSDL2)
 add_executable(Chip8 main.cpp)
 
 ExternalProject_Add(spdlog
-    PREFIX spdlog
+    PREFIX ${PROJECT_SOURCE_DIR}/build/spdlog
     SOURCE_DIR ${PROJECT_SOURCE_DIR}/libs
     CMAKE_ARGS -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
