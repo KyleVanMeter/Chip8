@@ -1,7 +1,16 @@
-#define CATCH_CONFIG_MAIN
+#define CATCH_CONFIG_RUNNER
 #include "../IReader.hpp"
 #include "../chip8.hpp"
+#include "spdlog/spdlog.h"
 #include <catch/catch.hpp>
+
+int main(int argc, char** argv) {
+  spdlog::set_level(spdlog::level::err);
+
+  int result = Catch::Session().run(argc, argv);
+
+  return result;
+}
 
 TEST_CASE("Chip8 initializes.") {
   chip8 chip;
