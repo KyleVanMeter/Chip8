@@ -2,6 +2,7 @@
 #include <cstring>
 #include <iostream>
 
+#include "spdlog/spdlog.h"
 #include "IReader.hpp"
 #include "chip8.hpp"
 #include "inputparser.hpp"
