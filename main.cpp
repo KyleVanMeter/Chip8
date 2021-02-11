@@ -2,15 +2,18 @@
 #include <cstring>
 #include <iostream>
 
-#include "spdlog/spdlog.h"
 #include "IReader.hpp"
 #include "chip8.hpp"
 #include "inputparser.hpp"
+#include "spdlog/spdlog.h"
 #include "view.hpp"
 
 chip8 Chip;
 
-void printHelp() { std::cerr << "Usage: Chip8 -f [filename]\n"; }
+void printHelp() {
+  std::cerr << "Usage: Chip8 -f [filename]\n             -l [0,1,2] Set log "
+               "level (defaults to 1)\n";
+}
 
 int main(int argc, char **argv) {
   constexpr int HEIGHT = 32;
@@ -20,6 +23,25 @@ int main(int argc, char **argv) {
   InputParser input(argc, argv);
 
   if (input.CMDOptionExists("-f")) {
+    if (input.CMDOptionExists("-l")) {
+      int option = std::stoi(input.getCMDOption("-l"));
+
+      if (option == 0) {
+        std::cerr << "0\n";
+        spdlog::set_level(spdlog::level::off);
+      }
+      if (option == 1) {
+        std::cerr << "1\n";
+        spdlog::set_level(spdlog::level::info);
+      }
+      if (option == 2) {
+        std::cerr << "2\n";
+        spdlog::set_level(spdlog::level::trace);
+      }
+    } else {
+      spdlog::set_level(spdlog::level::info);
+    }
+
     std::string fileName = input.getCMDOption("-f");
     std::chrono::time_point<std::chrono::steady_clock> begin, end;
 
@@ -62,7 +84,7 @@ int main(int argc, char **argv) {
                 .count() <= 2);
       }
     } catch (std::exception &e) {
-      std::cerr << "ERR: " << e.what();
+      spdlog::error("ERR: ", e.what());
       std::free(rgb);
       std::exit(-1);
     }

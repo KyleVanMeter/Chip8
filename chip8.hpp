@@ -2,8 +2,17 @@
 #define __CHIP8_H__
 
 #include "IReader.hpp"
+
 #include <array>
+#include <sstream>
+#include <iostream>
 #include <map>
+
+template <typename... Args> std::string sstr(Args &&... args) {
+  std::ostringstream sstr;
+  (sstr << std::dec << ... << args);
+  return sstr.str();
+}
 
 static const unsigned char fontset[80] = {
     0xF0, 0x90, 0x90, 0x90, 0xF0, // 0

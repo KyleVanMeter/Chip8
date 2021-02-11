@@ -10,6 +10,7 @@
 #include <string.h>
 #include <vector>
 
+#include "spdlog/spdlog.h"
 #include <SDL2/SDL.h>
 
 std::string intToString(int in) {
@@ -61,7 +62,6 @@ void chip8::load(std::string fileName) {
 }
 */
 void chip8::load(IReader &reader) {
-  std::cout << std::hex << PC << "\n";
   std::vector<char> data = reader.get();
   std::memcpy(memory + 0x200, data.data(), data.size());
 }
@@ -264,7 +264,7 @@ void chip8::setKeys() {
         key[KeySymToIndex[e.key.keysym.sym]] = 0;
       }
     default:
-      std::cout << "Unhandled event.\n";
+      spdlog::trace("Unhandled event.");
     }
   }
 }
@@ -272,14 +272,14 @@ void chip8::setKeys() {
 void chip8::OP_001N() { OP_UNHANDLED(); }
 
 void chip8::OP_00E0() {
-  std::cout << PC << " Clear display.\n";
+  spdlog::trace(sstr(PC, " Clear display."));
 
   std::memset(gfx, 0, sizeof(gfx));
   PC += 2;
 }
 
 void chip8::OP_00EE() {
-  std::cout << PC << " Return from subroutine at " << stack[SP] << "\n";
+  spdlog::trace(sstr(PC, " Return from subroutine at ", stack[SP]));
 
   PC = stack[SP];
   --SP;
@@ -290,18 +290,18 @@ void chip8::OP_00FA() { OP_UNHANDLED(); }
 
 void chip8::OP_0NNN() {
   // Ignored
-  std::cout << PC << " " << std::hex << opcode << " Ignored OP_0NNN\n";
+  spdlog::trace(sstr(PC, " ", std::hex, opcode, " Ignored OP_0NNN."));
   PC += 2;
 }
 
 void chip8::OP_1NNN() {
-  std::cout << PC << " Jump to " << ((opcode & 0x0FFF)) << "\n";
+  spdlog::trace(sstr(PC, " Jump to ", ((opcode & 0x0FFF))));
 
   PC = opcode & 0x0FFF;
 }
 
 void chip8::OP_2NNN() {
-  std::cout << PC << " Call subroutine at " << (opcode & 0x0FFF) << "\n";
+  spdlog::trace(sstr(PC, " Call subroutine at ", (opcode & 0x0FFF)));
 
   ++SP;
   stack[SP] = PC;
@@ -309,8 +309,8 @@ void chip8::OP_2NNN() {
 }
 
 void chip8::OP_3XNN() {
-  std::cout << PC << " Skip if V[" << ((opcode & 0x0F00) >> 8)
-            << "] == " << (opcode & 0x00FF) << "\n";
+  spdlog::trace(sstr(PC, " Skip if V[", ((opcode & 0x0F00) >> 8),
+                     "] == ", (opcode & 0x00FF)));
 
   if (V[(opcode & 0x0F00) >> 8] == (opcode & 0x00FF)) {
     PC += 4;
@@ -320,8 +320,8 @@ void chip8::OP_3XNN() {
 }
 
 void chip8::OP_4XNN() {
-  std::cout << PC << " Skip if V[" << ((opcode & 0x0F00) >> 8)
-            << "] != " << (opcode & 0x00FF) << "\n";
+  spdlog::trace(sstr(PC, " Skip if V[", ((opcode & 0x0F00) >> 8),
+                     "] != ", (opcode & 0x00FF)));
 
   if (V[(opcode & 0x0F00) >> 8] != (opcode & 0x00FF)) {
     PC += 4;
@@ -334,66 +334,65 @@ void chip8::OP_5XY0() { OP_UNHANDLED(); }
 
 void chip8::OP_6XNN() {
   // Load immediate value NN into VX
-  std::cout << PC << " Load immediate value " << (opcode & 0x00FF) << " into V["
-            << ((opcode & 0x0F00) >> 8) << "]\n";
+  spdlog::trace(sstr(PC, " Load immediate value ", (opcode & 0x00FF), " into V[",
+                     ((opcode & 0x0F00) >> 8), "]"));
   V[((opcode & 0x0F00) >> 8)] = (opcode & 0x00FF);
   PC += 2;
 }
 
 void chip8::OP_7XNN() {
-  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to "
-            << ((opcode & 0x00FF)) << " + V[" << ((opcode & 0x0F00) >> 8)
-            << "]\n";
+  spdlog::trace(sstr(PC, " Set V[", ((opcode & 0x0F00) >> 8), "] to ",
+                     ((opcode & 0x00FF)), " + V[", ((opcode & 0x0F00) >> 8), "]"));
 
   V[(opcode & 0x0F00) >> 8] += (opcode & 0x00FF);
   PC += 2;
 }
 
 void chip8::OP_8XY0() {
-  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] = V["
-            << ((opcode & 0x00F0) >> 4) << "].";
+  spdlog::trace(sstr(PC, " Set V[", ((opcode & 0x0F00) >> 8), "] = V[",
+                     ((opcode & 0x00F0) >> 4), "]"));
 
   V[(opcode & 0x0F00) >> 8] = V[(opcode & 0x00F0) >> 4];
   PC += 2;
 }
 
 void chip8::OP_8XY1() {
-  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
-            << ((opcode & 0x0F00) >> 8) << "] | V[" << ((opcode & 0x00F0) >> 4)
-            << "]\n";
+  spdlog::trace(sstr(PC, " Set V[", ((opcode & 0x0F00) >> 8), "] to V[",
+                ((opcode & 0x0F00) >> 8), "] | V[", ((opcode & 0x00F0) >> 4),
+                     "]"));
 
   V[(opcode & 0x0F00) >> 8] |= V[(opcode & 0x00F0) >> 4];
   PC += 2;
 }
 
 void chip8::OP_8XY2() {
-  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to "
-            << " V[" << ((opcode & 0x0F00) >> 8) << "] & V["
-            << ((opcode & 0x00F0) >> 4) << "]\n";
+  spdlog::trace(sstr(PC, " Set V[", ((opcode & 0x0F00) >> 8), "] to ", " V[",
+                ((opcode & 0x0F00) >> 8), "] & V[", ((opcode & 0x00F0) >> 4),
+                     "]"));
 
   V[(opcode & 0x0F00) >> 8] &= V[(opcode & 0x00F0) >> 4];
   PC += 2;
 }
 
 void chip8::OP_8XY3() {
-  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to "
-            << " V[" << ((opcode & 0x0F00) >> 8) << "] ^ V["
-            << ((opcode & 0x00F0) >> 4) << "]\n";
+  spdlog::trace(sstr(PC, " Set V[", ((opcode & 0x0F00) >> 8), "] to ", " V[",
+                ((opcode & 0x0F00) >> 8), "] ^ V[", ((opcode & 0x00F0) >> 4),
+                     "]"));
 
   V[(opcode & 0x0F00) >> 8] ^= V[(opcode & 0x00F0) >> 4];
   PC += 2;
 }
 
 void chip8::OP_8XY4() {
-  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
-            << ((opcode & 0x0F00) >> 8) << "] + V[" << ((opcode & 0x00F0) >> 4)
-            << "].  ";
+  spdlog::trace(sstr(PC, " Set V[", ((opcode & 0x0F00) >> 8), "] to V[",
+                ((opcode & 0x0F00) >> 8), "] + V[", ((opcode & 0x00F0) >> 4),
+                     "].  "));
 
   if (V[(opcode & 0x0F00) >> 8] + V[(opcode & 0x00F0) >> 4] > 255) {
-    std::cout << "V[f] = 1\n";
+    spdlog::trace("V[f] = 1");
     V[0xF] = 1;
   } else {
-    std::cout << "V[f] = 0\n";
+    spdlog::trace("V[f] = 0");
     V[0xF] = 0;
   }
   V[(opcode & 0x0F00) >> 8] += V[(opcode & 0x00F0) >> 4];
@@ -401,15 +400,15 @@ void chip8::OP_8XY4() {
 }
 
 void chip8::OP_8XY5() {
-  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
-            << ((opcode & 0x0F00) >> 8) << "] - V[" << ((opcode & 0x00F0) >> 4)
-            << "].  ";
+  spdlog::trace(sstr(PC, " Set V[", ((opcode & 0x0F00) >> 8), "] to V[",
+                ((opcode & 0x0F00) >> 8), "] - V[", ((opcode & 0x00F0) >> 4),
+                     "].  "));
 
   if (V[(opcode & 0x0F00) >> 8] > V[(opcode & 0x00F0) >> 4]) {
-    std::cout << "V[f] = 1\n";
+    spdlog::trace("V[f] = 1");
     V[0xF] = 1;
   } else {
-    std::cout << "V[f] = 0\n";
+    spdlog::trace("V[f] = 0");
     V[0xF] = 0;
   }
 
@@ -420,15 +419,15 @@ void chip8::OP_8XY5() {
 void chip8::OP_8XY6() { OP_UNHANDLED(); }
 
 void chip8::OP_8XY7() {
-  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8) << "] to V["
-            << ((opcode & 0x00F0) >> 4) << "] - V[" << ((opcode & 0x0F00) >> 8)
-            << "].  ";
+  spdlog::trace(sstr(PC, " Set V[", ((opcode & 0x0F00) >> 8), "] to V[",
+                ((opcode & 0x00F0) >> 4), "] - V[", ((opcode & 0x0F00) >> 8),
+                     "].  "));
 
   if (V[(opcode & 0x0F00) >> 8] < V[(opcode & 0x00F0) >> 4]) {
-    std::cout << "V[f] = 1\n";
+    spdlog::trace("V[f] = 1");
     V[0xF] = 1;
   } else {
-    std::cout << "V[f] = 0\n";
+    spdlog::trace("V[f] = 0");
     V[0xF] = 0;
   }
 
@@ -438,8 +437,8 @@ void chip8::OP_8XY7() {
 }
 
 void chip8::OP_8XYE() {
-  std::cout << PC << " Set V[0xF] to MSB of V[" << ((opcode & 0x0F00) >> 8)
-            << ", then multiply it by 2.\n";
+  spdlog::trace(sstr(PC, " Set V[0xF] to MSB of V[", ((opcode & 0x0F00) >> 8),
+                     ", then multiply it by 2."));
 
   V[0xF] = V[((opcode & 0x0F00) >> 8)] > 0x80;
   V[(opcode & 0x0F00) >> 8] <<= 1;
@@ -447,21 +446,21 @@ void chip8::OP_8XYE() {
 }
 
 void chip8::OP_9XY0() {
-  std::cout << PC << " Skip next instruction if V[" << ((opcode & 0x0F00) >> 8)
-            << "] != V[" << ((opcode & 0x00F0) >> 4) << "].  ";
+  spdlog::trace(sstr(PC, " Skip next instruction if V[", ((opcode & 0x0F00) >> 8),
+                     "] != V[", ((opcode & 0x00F0) >> 4), "].  "));
 
   if (V[(opcode & 0x0F00) >> 8] != V[(opcode & 0x00F0) >> 4]) {
-    std::cout << "Skipped!\n";
+    spdlog::trace("Skipped!");
     PC += 4;
   } else {
-    std::cout << "Not skipped!\n";
+    spdlog::trace("Not skipped!");
     PC += 2;
   }
 }
 
 void chip8::OP_ANNN() {
   // Set I to NNN
-  std::cout << PC << " Set I to " << (opcode & 0x0FFF) << "\n";
+  spdlog::trace(sstr(PC, " Set I to ", (opcode & 0x0FFF)));
 
   I = opcode & 0x0FFF;
   PC += 2;
@@ -474,8 +473,8 @@ void chip8::OP_CXNN() {
       std::chrono::system_clock::now().time_since_epoch().count());
   std::uniform_int_distribution<int> distribution(0, 255);
 
-  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8)
-            << "] = Random byte & " << ((opcode & 0x00FF) >> 4) << "\n";
+  spdlog::trace(sstr(PC, " Set V[", ((opcode & 0x0F00) >> 8), "] = Random byte & ",
+                     ((opcode & 0x00FF) >> 4)));
 
   V[(opcode & 0x0F00) >> 8] = distribution(gen) & ((opcode & 0x00FF) >> 4);
   PC += 2;
@@ -488,9 +487,9 @@ void chip8::OP_DXYN() {
   unsigned short n = opcode & 0x000F;
   unsigned short pixel;
 
-  std::cout << PC << " Display " << n << "-byte sprite starting at " << I
-            << " @ (V[" << ((opcode & 0x0F00) >> 8) << "], V["
-            << ((opcode & 0x00F0) >> 4) << "])\n";
+  spdlog::trace(sstr(PC, " Display ", n, "-byte sprite starting at ", I, " @ (V[",
+                ((opcode & 0x0F00) >> 8), "], V[", ((opcode & 0x00F0) >> 4),
+                     "])"));
 
   // Collision by default is 0
   V[0xF] = 0;
@@ -517,44 +516,42 @@ void chip8::OP_DXYN() {
 
 void chip8::OP_EX9E() {
   // Skip next instruction if V[X] is pressed
-  std::cout << PC << " Skip next instruction if V[" << ((opcode & 0x0F00) >> 8)
-            << "] is pressed.";
+  spdlog::trace(sstr(PC, " Skip next instruction if V[", ((opcode & 0x0F00) >> 8),
+                     "] is pressed."));
 
   if (key[V[(opcode & 0x0F00) >> 8]] != 0) {
-    std::cout << "  Skipped!";
+    spdlog::trace("  Skipped!");
     PC += 4;
   } else {
-    std::cout << "  Not skipped!";
+    spdlog::trace("  Not skipped!");
     PC += 2;
   }
-  std::cout << std::endl;
 }
 
 void chip8::OP_EXA1() {
   // Skip next instruction if V[X] is pressed
-  std::cout << PC << " Skip next instruction if V[" << ((opcode & 0x0F00) >> 8)
-            << "] is not pressed.";
+  spdlog::trace(sstr(PC, " Skip next instruction if V[", ((opcode & 0x0F00) >> 8),
+                     "] is not pressed."));
 
   if (key[V[(opcode & 0x0F00) >> 8]] != 0) {
-    std::cout << "  Not skipped!";
+    spdlog::trace("  Not skipped!");
     PC += 2;
   } else {
-    std::cout << "  Skipped!";
+    spdlog::trace("  Skipped!");
     PC += 4;
   }
-  std::cout << std::endl;
 }
 
 void chip8::OP_FX07() {
-  std::cout << PC << " Set V[" << ((opcode & 0x0F00) >> 8)
-            << "] to delay_timer (" << delay_timer << ")\n";
+  spdlog::trace(sstr(PC, " Set V[", ((opcode & 0x0F00) >> 8), "] to delay_timer (",
+                     delay_timer, ")"));
 
   V[(opcode & 0x0F00) >> 8] = delay_timer;
   PC += 2;
 }
 
 void chip8::OP_FX0A() {
-  std::cout << PC << " Wait for keypress...\n";
+    spdlog::trace(sstr(PC, " Wait for keypress..."));
 
   // Potential problem here: As we have implemented so far several keys can
   // be pressed at once.  I am not sure if that is typical for chip8
@@ -564,16 +561,15 @@ void chip8::OP_FX0A() {
   // values.  Therefore we pick the first result.
   auto result = std::find(key.begin(), key.end(), 1);
   if (result != std::end(key)) {
-    std::cout << "    Key pressed.  Setting V[" << ((opcode & 0x0F00) >> 8)
-              << "] to 1.\n";
+    spdlog::trace(sstr("    Key pressed.  Setting V[", ((opcode & 0x0F00) >> 8),
+                       "] to 1."));
     V[(opcode & 0x0F00) >> 8] = std::distance(key.begin(), result);
     PC += 2;
   }
 }
 
 void chip8::OP_FX15() {
-  std::cout << PC << " Set delay timer to V[" << ((opcode & 0x0F00) >> 8)
-            << "].\n";
+    spdlog::trace(sstr(PC, " Set delay timer to V[", ((opcode & 0x0F00) >> 8), "]"));
 
   delay_timer = V[(opcode & 0x0F00) >> 8];
 
@@ -581,8 +577,7 @@ void chip8::OP_FX15() {
 }
 
 void chip8::OP_FX18() {
-  std::cout << PC << " Set sound timer to V[" << ((opcode & 0x0F00) >> 8)
-            << "].\n";
+    spdlog::trace(sstr(PC, " Set sound timer to V[", ((opcode & 0x0F00) >> 8), "]"));
 
   sound_timer = V[(opcode & 0x0F00) >> 8];
 
@@ -590,23 +585,23 @@ void chip8::OP_FX18() {
 }
 
 void chip8::OP_FX1E() {
-  std::cout << PC << " Set I to I + V[" << ((opcode & 0x0F00) >> 8) << "]\n";
+    spdlog::trace(sstr(PC, " Set I to I + V[", ((opcode & 0x0F00) >> 8), "]"));
 
   I += V[(opcode & 0x0F00) >> 8];
   PC += 2;
 }
 
 void chip8::OP_FX29() {
-  std::cout << PC << " Set I to location of sprite corresponding to V["
-            << ((opcode & 0x0F00) >> 8) << "]\n";
+  spdlog::trace(sstr(PC, " Set I to location of sprite corresponding to V[",
+                     ((opcode & 0x0F00) >> 8), "]"));
 
   I = HexToFontCharLoc[V[((opcode & 0x0F00) >> 8)]];
   PC += 2;
 }
 
 void chip8::OP_FX33() {
-  std::cout << PC << " Store BCD of V[" << ((opcode & 0x0F00) >> 8)
-            << "] representation at " << I << "..." << I + 2 << "\n";
+  spdlog::trace(sstr(PC, " Store BCD of V[", ((opcode & 0x0F00) >> 8),
+                     "] representation at ", I, "...", I + 2));
   memory[I] = V[(opcode & 0x0F00) >> 8] / 100;
   memory[I + 1] = (V[(opcode & 0x0F00) >> 8] / 10) % 10;
   memory[I + 2] = (V[(opcode & 0x0F00) >> 8] % 100) % 10;
@@ -615,9 +610,8 @@ void chip8::OP_FX33() {
 }
 
 void chip8::OP_FX55() {
-  std::cout << PC << " Copy registers V[0] through V["
-            << ((opcode & 0x0F00) >> 8) << "] into memory starting at I: " << I
-            << ".\n";
+  spdlog::trace(sstr(PC, " Copy registers V[0] through V[", ((opcode & 0x0F00) >> 8),
+                     "] into memory starting at I: ", I));
   unsigned char X = ((opcode & 0x0F00) >> 8);
 
   for (int i = 0; i < X; i++) {
@@ -628,9 +622,9 @@ void chip8::OP_FX55() {
 }
 
 void chip8::OP_FX65() {
-  std::cout << PC << " Copy memory from " << I << "..."
-            << I + ((opcode & 0x0F00) >> 8) << " into V[0..."
-            << ((opcode & 0x0F00) >> 8) << "]\n";
+  spdlog::trace(sstr(PC, " Copy memory from ", I, "...",
+                I + ((opcode & 0x0F00) >> 8), " into V[0...",
+                     ((opcode & 0x0F00) >> 8), "]"));
   unsigned char X = ((opcode & 0x0F00) >> 8);
 
   for (int i = 0; i < X; ++i) {
