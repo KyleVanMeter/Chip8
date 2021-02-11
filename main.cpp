@@ -27,15 +27,12 @@ int main(int argc, char **argv) {
       int option = std::stoi(input.getCMDOption("-l"));
 
       if (option == 0) {
-        std::cerr << "0\n";
         spdlog::set_level(spdlog::level::off);
       }
       if (option == 1) {
-        std::cerr << "1\n";
         spdlog::set_level(spdlog::level::info);
       }
       if (option == 2) {
-        std::cerr << "2\n";
         spdlog::set_level(spdlog::level::trace);
       }
     } else {
