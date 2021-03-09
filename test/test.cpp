@@ -4,7 +4,7 @@
 #include "spdlog/spdlog.h"
 #include <catch/catch.hpp>
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
   spdlog::set_level(spdlog::level::err);
 
   int result = Catch::Session().run(argc, argv);
@@ -134,6 +134,7 @@ TEST_CASE("TestChip8 executes instructions.") {
     REQUIRE(T.GetPC() == 0x202);
   }
 
+  /*
   SECTION("OP_5XY0 SE Vx, Vy.  Equal.") {
     std::vector<char> opcodes{(char)0x50, (char)0x00};
     TestReader reader(opcodes);
@@ -145,6 +146,7 @@ TEST_CASE("TestChip8 executes instructions.") {
     REQUIRE(T.GetV(1) == T.GetV(1));
     REQUIRE(T.GetPC() == 0x202);
   }
+  */
 
-  SECTION("OP_5XY0 SE Vx, Vy.  Not Equal.") {}
+  // SECTION("OP_5XY0 SE Vx, Vy.  Not Equal.") {}
 }
