@@ -149,4 +149,24 @@ TEST_CASE("TestChip8 executes instructions.") {
   */
 
   // SECTION("OP_5XY0 SE Vx, Vy.  Not Equal.") {}
+
+  SECTION("OP_6XNN LD Vx, byte.") {
+    std::vector<char> opcodes{(char)0x61, (char)0xEE};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+
+    REQUIRE(T.GetOpcode() == (Opcodes::OP_6XNN | 0x01EE));
+    REQUIRE(T.GetV(1) == 0x00EE);
+    REQUIRE(T.GetPC() == 0x202);
+
+    opcodes = {(char)0x31, (char)0xEE};
+    TestReader reader2(opcodes);
+    T.load(reader2);
+
+    T.emuCycle();
+
+    REQUIRE(T.GetPC() == 0x204);
+  }
 }
