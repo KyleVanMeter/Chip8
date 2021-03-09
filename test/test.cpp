@@ -169,4 +169,31 @@ TEST_CASE("TestChip8 executes instructions.") {
 
     REQUIRE(T.GetPC() == 0x204);
   }
+
+  SECTION("OP_7XNN ADD Vx, byte.") {
+    std::vector<char> opcodes{(char)0x72, (char)0xEE};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+
+    REQUIRE(T.GetPC() == 0x202);
+    REQUIRE(T.GetV(2) == 0xEE);
+  }
+
+  SECTION("OP_7XNN ADD Vx, byte.  Non-zero register value") {
+    std::vector<char> opcodes{(char)0x62, (char)0x11, (char)0x72, (char)0x22};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+    REQUIRE(T.GetOpcode() == (Opcodes::OP_6XNN | 0x0211));
+    REQUIRE(T.GetV(2) == 0x0011);
+    REQUIRE(T.GetPC() == 0x202);
+    T.emuCycle();
+
+    REQUIRE(T.GetOpcode() == (Opcodes::OP_7XNN | 0x0222));
+    REQUIRE(T.GetPC() == 0x204);
+    REQUIRE(T.GetV(2) == (0x0011 + 0x0022));
+  }
 }
