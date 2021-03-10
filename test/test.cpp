@@ -181,7 +181,7 @@ TEST_CASE("TestChip8 executes instructions.") {
     REQUIRE(T.GetV(2) == 0xEE);
   }
 
-  SECTION("OP_7XNN ADD Vx, byte.  Non-zero register value") {
+  SECTION("OP_7XNN ADD Vx, byte.  Non-zero register value.") {
     std::vector<char> opcodes{(char)0x62, (char)0x11, (char)0x72, (char)0x22};
     TestReader reader(opcodes);
     T.load(reader);
@@ -195,5 +195,66 @@ TEST_CASE("TestChip8 executes instructions.") {
     REQUIRE(T.GetOpcode() == (Opcodes::OP_7XNN | 0x0222));
     REQUIRE(T.GetPC() == 0x204);
     REQUIRE(T.GetV(2) == (0x0011 + 0x0022));
+  }
+
+  SECTION("OP_8XY0 LD Vx, Vy.") {
+    std::vector<char> opcodes{(char)0x80, (char)0x10};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+
+    REQUIRE(T.GetOpcode() == (Opcodes::OP_8XY0 | 0x0010));
+    REQUIRE(T.GetPC() == 0x202);
+    REQUIRE(T.GetV(1) == T.GetV(0));
+  }
+
+  SECTION("OP_8XY0 LD Vx, Vy.  Non-zero register copy.") {
+    std::vector<char> opcodes{(char)0x61, (char)0xEE, (char)0x80, (char)0x10};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+    REQUIRE(T.GetOpcode()  == (Opcodes::OP_6XNN | 0x01EE));
+    REQUIRE(T.GetPC() == 0x202);
+    REQUIRE(T.GetV(1) == 0xEE);
+
+    T.emuCycle();
+    REQUIRE(T.GetOpcode() == (Opcodes::OP_8XY0 | 0x0010));
+    REQUIRE(T.GetPC() == 0x204);
+    REQUIRE(T.GetV(0) == T.GetV(1));
+  }
+
+  SECTION("OP_8XY1 Or Vx, Vy.") {
+    std::vector<char> opcodes{(char)0x80, (char)0x11};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+    REQUIRE(T.GetOpcode() == (Opcodes::OP_8XY1 | 0x0011));
+    REQUIRE(T.GetPC() == 0x202);
+    REQUIRE(T.GetV(0) == (0x00 | 0x01));
+  }
+
+  SECTION("OP_8XY1 Or Vx, Vy.  Non-zero register bitwise OR") {
+    std::vector<char> opcodes{(char)0x60, (char)0x02, (char)0x61,
+                              (char)0x19, (char)0x80, (char)0x11};
+    TestReader reader(opcodes);
+    T.load(reader);
+
+    T.emuCycle();
+    REQUIRE(T.GetOpcode() == (Opcodes::OP_6XNN | 0x0002));
+    REQUIRE(T.GetPC() == 0x202);
+    REQUIRE(T.GetV(0) == 0x02);
+
+    T.emuCycle();
+    REQUIRE(T.GetOpcode() == (Opcodes::OP_6XNN | 0x0119));
+    REQUIRE(T.GetPC() == 0x204);
+    REQUIRE(T.GetV(1) == 0x19);
+
+    T.emuCycle();
+    REQUIRE(T.GetOpcode() == (Opcodes::OP_8XY1 | 0x0011));
+    REQUIRE(T.GetPC() == 0x206);
+    REQUIRE(T.GetV(0) == (0x02 | 0x19));
   }
 }
