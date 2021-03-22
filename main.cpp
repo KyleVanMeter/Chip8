@@ -10,6 +10,13 @@
 
 chip8 Chip;
 
+#if defined(__WIN32__)
+#define LOAD_LIB(libName) __pragma(comment(lib, libName))
+//__pragma( message("linking " libName ".lib") )
+LOAD_LIB("..\\SDL2\\lib\\x86\\sdl2.lib")
+LOAD_LIB("..\\SDL2\\lib\\x86\\sdl2main.lib")
+#endif
+
 void printHelp() {
   std::cerr << "Usage: Chip8 -f [filename]\n             -l [0,1,2] Set log "
                "level (defaults to 1)\n";
